@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - Change Password</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ffccc3",
+            "primary-light": "#ffd9d2",
+            "primary-lighter": "#ffe6e1",
+            "primary-lightest": "#fff2f0",
+            "white": "#ffffff",
+            "text-primary": "#2D313E",
+            "text-secondary": "#6C6F7D",
+            "destructive": "#FF5C5C",
+            "destructive-light": "#FFE5E5",
+            "success": "#4CAF50",
+            "warning": "#FFC107"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-primary-lightest group/design-root overflow-x-hidden">
+<div class="flex items-center bg-primary-lightest p-4 pb-2 justify-between sticky top-0 z-10">
+<div class="flex w-12 items-center justify-start">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-primary gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl text-text-primary">arrow_back_ios_new</span>
+</button>
+</div>
+<h2 class="text-text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Change Password</h2>
+<div class="flex w-12 shrink-0 items-center justify-end"></div>
+</div>
+<div class="flex flex-1 flex-col justify-between p-4">
+<div class="flex flex-col gap-6">
+<div class="flex flex-col gap-4">
+<label class="text-text-primary font-medium" for="current-password">Current Password</label>
+<div class="relative">
+<input class="w-full rounded-lg border border-primary-light bg-white p-3 text-text-primary placeholder:text-text-secondary focus:border-primary focus:ring-primary" id="current-password" placeholder="Enter your current password" type="password"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-text-secondary">visibility_off</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<label class="text-text-primary font-medium" for="new-password">New Password</label>
+<div class="relative">
+<input class="w-full rounded-lg border border-primary-light bg-white p-3 text-text-primary placeholder:text-text-secondary focus:border-primary focus:ring-primary" id="new-password" placeholder="Enter your new password" type="password"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-text-secondary">visibility_off</span>
+</div>
+<div class="flex items-center gap-2 text-sm text-warning">
+<span class="material-symbols-outlined text-base">warning</span>
+<span>Password strength: Weak</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<label class="text-text-primary font-medium" for="confirm-password">Confirm New Password</label>
+<div class="relative">
+<input class="w-full rounded-lg border border-destructive bg-white p-3 text-text-primary placeholder:text-text-secondary focus:border-destructive focus:ring-destructive" id="confirm-password" placeholder="Confirm your new password" type="password"/>
+<span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-text-secondary">visibility_off</span>
+</div>
+<div class="flex items-center gap-2 text-sm text-destructive">
+<span class="material-symbols-outlined text-base">error</span>
+<span>Passwords do not match.</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4 pt-8">
+<button class="w-full rounded-full bg-primary py-3 text-center font-bold text-text-primary transition-colors hover:bg-primary-light">Save Changes</button>
+<button class="w-full rounded-full bg-transparent py-3 text-center font-bold text-text-secondary transition-colors hover:bg-primary-lighter">Cancel</button>
+</div>
+</div>
+</div>
+
+</body></html>

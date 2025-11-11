@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - Confirm Action</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0,
+      'wght' 400,
+      'GRAD' 0,
+      'opsz' 24
+    }
+  </style>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#ffccc3",
+            "primary-light": "#ffd9d2",
+            "primary-lighter": "#ffe6e1",
+            "primary-lightest": "#fff2f0",
+            "white": "#ffffff",
+            "text-primary": "#2D313E",
+            "text-secondary": "#6C6F7D",
+            "destructive": "#FF5C5C",
+            "destructive-light": "#FFE5E5",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    input::placeholder {
+        color: #B0B3BC;}
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-primary-lightest">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="flex items-center bg-primary-lightest p-4 pb-2 justify-between">
+<div class="flex w-12 items-center justify-start">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-primary gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl text-text-primary">close</span>
+</button>
+</div>
+<h2 class="text-text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Confirm Action</h2>
+<div class="flex w-12 shrink-0 items-center justify-end"></div>
+</div>
+<div class="flex flex-1 flex-col justify-between p-4 pt-6">
+<div class="flex flex-col gap-8 text-center">
+<div class="flex flex-col items-center gap-4">
+<div class="flex h-16 w-16 items-center justify-center rounded-full bg-destructive-light">
+<span class="material-symbols-outlined text-4xl text-destructive">warning</span>
+</div>
+<h1 class="text-2xl font-bold text-text-primary">Remove All Data?</h1>
+<p class="text-text-secondary">This action is irreversible. All your research notes, documents, and associated data will be permanently deleted.</p>
+</div>
+<div class="flex flex-col gap-4 text-left">
+<label class="font-medium text-text-primary" for="password">Enter your password to confirm</label>
+<div class="relative">
+<input class="w-full rounded-lg border-0 bg-white px-4 py-3 text-text-primary ring-1 ring-inset ring-gray-200 focus:ring-2 focus:ring-inset focus:ring-primary" id="password" placeholder="Password" type="password"/>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-3 pb-4">
+<button class="flex w-full items-center justify-center rounded-xl bg-destructive py-3 text-base font-bold text-white">Confirm &amp; Remove Data</button>
+<button class="flex w-full items-center justify-center rounded-xl bg-primary-lighter py-3 text-base font-bold text-text-primary">Cancel</button>
+</div>
+</div>
+</div>
+
+</body></html>

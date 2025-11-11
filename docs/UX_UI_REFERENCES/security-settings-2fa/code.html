@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - Two-Factor Authentication (2FA)</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ffccc3", 
+              "primary-light": "#ffd9d2",
+              "primary-lighter": "#ffe6e1",
+              "primary-lightest": "#fff2f0",
+              "white": "#ffffff",
+              "text-primary": "#2D313E",
+              "text-secondary": "#6C6F7D",
+              "destructive": "#FF5C5C",
+              "destructive-light": "#FFE5E5",
+              "success": "#4CAF50",
+              "success-light": "#E8F5E9",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-primary-lightest group/design-root overflow-x-hidden">
+<div class="sticky top-0 z-10 flex items-center bg-primary-lightest/80 p-4 pb-2 backdrop-blur-sm justify-between">
+<div class="flex w-12 items-center justify-start">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-primary gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl text-text-primary">arrow_back_ios_new</span>
+</button>
+</div>
+<h2 class="text-text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Two-Factor Authentication (2FA)</h2>
+<div class="flex w-12 shrink-0 items-center justify-end"></div>
+</div>
+<div class="flex flex-col gap-8 p-4">
+<div class="flex flex-col items-center text-center gap-3">
+<div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary">
+<span class="material-symbols-outlined text-white !text-5xl">shield_lock</span>
+</div>
+<h3 class="text-text-primary text-xl font-bold">Secure Your Account</h3>
+<p class="text-text-secondary text-base max-w-sm">Two-factor authentication adds an extra layer of security to your account by requiring more than just a password to log in.</p>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Authentication Method</h3>
+<div class="rounded-xl bg-white p-4 flex flex-col gap-2">
+<div class="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-primary-lightest">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">qr_code_scanner</span>
+<div class="flex flex-col">
+<p class="text-text-primary font-medium">Authenticator App</p>
+<p class="text-text-secondary text-sm">Use an app like Google Authenticator</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</div>
+<hr class="border-gray-100 mx-2"/>
+<div class="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-primary-lightest">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined text-primary">sms</span>
+<div class="flex flex-col">
+<p class="text-text-primary font-medium">Text Message (SMS)</p>
+<p class="text-text-secondary text-sm">We'll send a code to your phone</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Current Status</h3>
+<div class="rounded-xl bg-white p-4">
+<div class="flex items-center justify-between rounded-lg p-2 bg-success-light">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-success">check_circle</span>
+<p class="font-medium text-success">2FA is Currently Inactive</p>
+</div>
+</div>
+</div>
+</div>
+<div class="mt-4">
+<button class="w-full rounded-xl bg-primary py-3 px-6 text-center font-bold text-white shadow-md transition-transform duration-200 ease-in-out hover:scale-[1.02]">Enable 2FA</button>
+</div>
+</div>
+</div>
+
+</body></html>

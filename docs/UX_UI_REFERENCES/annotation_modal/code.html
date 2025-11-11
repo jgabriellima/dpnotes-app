@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - Annotation Modal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "pastel-strong": "#ffccc3",
+            "pastel-medium": "#ffd9d2",
+            "pastel-light": "#ffe6e1",
+            "pastel-xlight": "#fff2f0",
+            "pastel-white": "#ffffff",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+<style>
+    .material-symbols-outlined {
+      font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex min-h-screen w-full flex-col bg-pastel-xlight group/design-root overflow-x-hidden">
+<div class="p-6 text-gray-700">
+<h1 class="text-2xl font-bold mb-4 text-gray-800">dpnotes.ai Research</h1>
+<p class="mb-2">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+<p class="mb-2">Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. <span class="bg-pastel-light p-1 rounded-md text-red-800/80">"Esta sentença está selecionada e tem anotações aplicadas."</span> Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+<p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+</div>
+<div class="absolute inset-0 flex h-full w-full flex-col justify-end bg-black/50">
+<div class="flex flex-col rounded-t-xl bg-pastel-white">
+<div class="flex h-5 w-full items-center justify-center pt-3">
+<div class="h-1 w-9 rounded-full bg-gray-300"></div>
+</div>
+<div class="px-4 pt-4">
+<p class="text-red-800/80 text-base font-normal leading-normal p-4 bg-pastel-light border-l-4 border-pastel-strong rounded-r-lg">"Esta sentença está selecionada e tem anotações aplicadas."</p>
+</div>
+<div class="px-4">
+<h3 class="text-gray-800 text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-6">Labels</h3>
+<div class="flex gap-2 p-1 flex-wrap">
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-pastel-light px-3 hover:bg-pastel-medium transition-colors">
+<span class="text-red-800/80 text-sm font-medium leading-normal">Expand</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-pastel-light px-3 hover:bg-pastel-medium transition-colors">
+<span class="text-red-800/80 text-sm font-medium leading-normal">Simpl</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full bg-pastel-light px-3 hover:bg-pastel-medium transition-colors">
+<span class="text-red-800/80 text-sm font-medium leading-normal">Remove</span>
+</button>
+<button class="flex h-8 shrink-0 items-center justify-center gap-x-2 rounded-full border border-dashed border-pastel-strong bg-transparent px-3 text-red-800/80 hover:bg-pastel-xlight transition-colors">
+<span class="material-symbols-outlined text-base">add</span>
+<span class="text-sm font-medium leading-normal">Nova Label</span>
+</button>
+</div>
+</div>
+<div class="px-4">
+<h3 class="text-gray-800 text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-6">Gravação de Áudio</h3>
+<button class="flex w-full items-center justify-center gap-x-3 rounded-lg border border-pastel-medium bg-transparent p-4 text-center text-gray-600 hover:bg-pastel-xlight transition-colors">
+<span class="material-symbols-outlined text-red-500">fiber_manual_record</span>
+<span class="text-sm font-medium">Toque para gravar (máx 2 minutos)</span>
+</button>
+</div>
+<div class="px-4">
+<h3 class="text-gray-800 text-lg font-bold leading-tight tracking-[-0.015em] pb-2 pt-6">Anotação de Texto</h3>
+<textarea class="w-full min-h-[100px] resize-y rounded-lg border border-pastel-medium bg-pastel-white p-3 text-gray-800 placeholder:text-gray-400 focus:border-pastel-strong focus:ring-pastel-strong" placeholder="Digite sua anotação aqui..."></textarea>
+</div>
+<div class="flex gap-3 px-4 py-6">
+<button class="flex-1 rounded-lg py-3 text-center text-sm font-semibold text-red-800/80 bg-pastel-light hover:bg-pastel-medium transition-colors">Cancelar</button>
+<button class="flex-1 rounded-lg bg-pastel-strong py-3 text-center text-sm font-semibold text-red-900 hover:bg-opacity-90 transition-colors">Salvar</button>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

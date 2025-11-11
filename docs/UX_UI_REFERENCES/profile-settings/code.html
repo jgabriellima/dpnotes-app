@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - User Profile &amp; Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ffccc3", 
+              "primary-light": "#ffd9d2",
+              "primary-lighter": "#ffe6e1",
+              "primary-lightest": "#fff2f0",
+              "white": "#ffffff",
+              "text-primary": "#2D313E",
+              "text-secondary": "#6C6F7D",
+              "destructive": "#FF5C5C",
+              "destructive-light": "#FFE5E5",
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-primary-lightest group/design-root overflow-x-hidden">
+<div class="flex items-center bg-primary-lightest p-4 pb-2 justify-between">
+<div class="flex w-12 items-center justify-start">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-primary gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl text-text-primary">arrow_back_ios_new</span>
+</button>
+</div>
+<h2 class="text-text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Profile &amp; Settings</h2>
+<div class="flex w-12 shrink-0 items-center justify-end"></div>
+</div>
+<div class="flex flex-col gap-6 px-4 pt-6 pb-6">
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Account</h3>
+<div class="flex flex-col gap-4 rounded-xl bg-white p-4">
+<div class="flex items-center gap-4">
+<div class="relative shrink-0">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-16" data-alt="User profile avatar image" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuARAFFxXYdoYH8onRd05Y8y816vZH8mWVEMA4AP-O2IE8QgdfrVTRdrdDhyLcYv0CuWb46f8-ciZQp-d3wglI09K0dgStUuuU7a-30soHOMITxk5ylL6b-rUmoTO-GiD5Kr6irvKSxIxZo7iMmhSeP8Nuxe49rbeKhEc_acf0yMzX3RgYKlG7QNRW0CGRIzzwCpAzhARS5yMTqLZGlUsIMK7l9Wqo66LOrdV1s34NHb98t4v-qXW-G2snIuJ8bWRZEveJD_qCrAD-H8");'></div>
+<button class="absolute bottom-0 right-0 flex size-6 items-center justify-center rounded-full bg-primary text-white">
+<span class="material-symbols-outlined text-base">edit</span>
+</button>
+</div>
+<div class="flex-1">
+<p class="text-text-primary text-base font-bold leading-tight">Alex Thompson</p>
+<p class="text-text-secondary text-sm font-normal leading-normal">alex.thompson@email.com</p>
+</div>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Usage Statistics</h3>
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-2 rounded-xl bg-white p-4">
+<p class="text-text-secondary text-sm font-normal">Storage Used</p>
+<p class="text-text-primary text-xl font-bold">4.2 GB</p>
+</div>
+<div class="flex flex-col gap-2 rounded-xl bg-white p-4">
+<p class="text-text-secondary text-sm font-normal">Total Tokens</p>
+<p class="text-text-primary text-xl font-bold">1.2M</p>
+</div>
+</div>
+<div class="flex cursor-pointer items-center justify-between rounded-xl bg-white p-4">
+<p class="text-text-primary font-medium">Manage Subscription</p>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Security</h3>
+<div class="flex flex-col gap-2 rounded-xl bg-white p-4">
+<div class="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-primary-lightest">
+<p class="text-text-primary font-medium">Change Password</p>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</div>
+<div class="flex cursor-pointer items-center justify-between rounded-lg p-2 hover:bg-primary-lightest">
+<p class="text-text-primary font-medium">Two-Factor Authentication</p>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Account Actions</h3>
+<div class="flex flex-col gap-2 rounded-xl bg-white p-4">
+<div class="flex cursor-pointer items-center gap-3 rounded-lg p-2 text-destructive hover:bg-destructive-light">
+<span class="material-symbols-outlined">delete_forever</span>
+<p class="font-medium">Remove All Data</p>
+</div>
+<div class="flex cursor-pointer items-center gap-3 rounded-lg p-2 text-destructive hover:bg-destructive-light">
+<span class="material-symbols-outlined">cancel</span>
+<p class="font-medium">Cancel Account</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - Manage Subscription</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings:
+        'FILL' 0,
+        'wght' 400,
+        'GRAD' 0,
+        'opsz' 24
+      }
+    </style>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#ffccc3", 
+              "primary-light": "#ffd9d2",
+              "primary-lighter": "#ffe6e1",
+              "primary-lightest": "#fff2f0",
+              "white": "#ffffff",
+              "text-primary": "#2D313E",
+              "text-secondary": "#6C6F7D",
+              "destructive": "#FF5C5C",
+              "destructive-light": "#FFE5E5",
+              "success": "#4CAF50",
+              "success-lightest": "#E8F5E9"
+            },
+            fontFamily: {
+              "display": ["Inter", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-primary-lightest">
+<div class="relative flex h-auto min-h-screen w-full flex-col group/design-root overflow-x-hidden">
+<div class="flex items-center bg-primary-lightest p-4 pb-2 justify-between">
+<div class="flex w-12 items-center justify-start">
+<button class="flex max-w-[480px] cursor-pointer items-center justify-center overflow-hidden rounded-xl h-12 bg-transparent text-text-primary gap-2 text-base font-bold leading-normal tracking-[0.015em] min-w-0 p-0">
+<span class="material-symbols-outlined text-2xl text-text-primary">arrow_back_ios_new</span>
+</button>
+</div>
+<h2 class="text-text-primary text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Manage Subscription</h2>
+<div class="flex w-12 shrink-0 items-center justify-end"></div>
+</div>
+<div class="flex flex-col gap-8 p-4">
+<div class="flex flex-col gap-4 rounded-xl bg-white p-6 text-center shadow-sm">
+<p class="text-text-secondary text-sm">Current Plan</p>
+<h3 class="text-text-primary text-3xl font-bold">Pro Plan</h3>
+<p class="text-text-primary text-lg"><span class="font-bold">$15</span> / month</p>
+<div class="mt-2 inline-flex items-center justify-center self-center rounded-full bg-success-lightest px-3 py-1 text-sm font-medium text-success">
+                Active
+            </div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Plan Benefits</h3>
+<div class="flex flex-col gap-3 rounded-xl bg-white p-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-success">check_circle</span>
+<p class="text-text-primary">Unlimited Notes</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-success">check_circle</span>
+<p class="text-text-primary">Advanced AI Analysis</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-success">check_circle</span>
+<p class="text-text-primary">50 GB Cloud Storage</p>
+</div>
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-success">check_circle</span>
+<p class="text-text-primary">Priority Support</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col gap-2 rounded-xl bg-white p-4">
+<div class="flex items-center justify-between">
+<p class="text-text-secondary">Renews on</p>
+<p class="font-medium text-text-primary">July 25, 2024</p>
+</div>
+<div class="flex items-center justify-between">
+<p class="text-text-secondary">Payment Method</p>
+<p class="font-medium text-text-primary">Visa **** 4242</p>
+</div>
+</div>
+<div class="flex flex-col gap-4">
+<h3 class="text-text-primary text-lg font-bold leading-tight">Subscription Options</h3>
+<div class="flex flex-col gap-2">
+<button class="flex w-full cursor-pointer items-center justify-between rounded-xl bg-primary p-4 text-left font-bold text-text-primary">
+<span>Upgrade Plan</span>
+<span class="material-symbols-outlined">arrow_forward_ios</span>
+</button>
+<button class="flex w-full cursor-pointer items-center justify-between rounded-xl bg-white p-4 text-left font-medium text-text-primary">
+<span>Downgrade Plan</span>
+<span class="material-symbols-outlined text-text-secondary">arrow_forward_ios</span>
+</button>
+</div>
+</div>
+<div class="text-center">
+<button class="font-medium text-destructive">Cancel Subscription</button>
+</div>
+</div>
+</div>
+
+</body></html>

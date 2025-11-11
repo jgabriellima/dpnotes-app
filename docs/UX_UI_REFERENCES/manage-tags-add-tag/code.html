@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>dpnotes.ai - Add New Tag</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#4A5568", // Darker text/icon color for contrast
+                        "primary-light": "#A0AEC0",
+                        "accent": "#ffccc3", // Accent (deepest pastel)
+                        "highlight": "#ffd9d2", // Highlight (mid pastel)
+                        "badge": "#ffe6e1", // Badge (light pastel)
+                        "subtle": "#fff2f0", // Subtle BG (lightest pastel)
+                        "background-light": "#ffffff", // Main BG (white)
+                        "background-dark": "#1A202C",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+                'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24
+        }
+        body {
+            min-height: 100vh;padding-top: env(safe-area-inset-top);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-primary dark:text-zinc-200">
+<div class="relative flex min-h-screen w-full flex-col">
+<header class="sticky top-0 z-10 flex flex-col gap-2 bg-background-light/80 dark:bg-background-dark/80 px-4 pb-2 pt-4 backdrop-blur-sm">
+<div class="flex h-12 items-center justify-between">
+<a class="flex h-12 w-12 items-center justify-start text-primary dark:text-primary-light" href="#">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</a>
+<a class="text-base font-bold leading-normal tracking-wide text-primary dark:text-primary-light" href="#">dpnotes.ai</a>
+</div>
+<h1 class="text-3xl font-bold leading-tight tracking-tight text-zinc-900 dark:text-white">Add New Tag</h1>
+</header>
+<main class="flex-grow px-4 py-6">
+<form action="#" class="space-y-8" method="POST">
+<div>
+<label class="block text-sm font-medium text-primary dark:text-primary-light" for="tag-label">Tag Label</label>
+<div class="mt-2">
+<input class="block w-full rounded-lg border-0 bg-subtle px-4 py-3 text-zinc-900 ring-1 ring-inset ring-highlight placeholder:text-primary-light focus:ring-2 focus:ring-inset focus:ring-accent dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:focus:ring-accent" id="tag-label" name="tag-label" placeholder="e.g. Key Concept" type="text"/>
+</div>
+</div>
+<div>
+<label class="block text-sm font-medium text-primary dark:text-primary-light" for="description">Description (Optional)</label>
+<div class="mt-2">
+<textarea class="block w-full rounded-lg border-0 bg-subtle px-4 py-3 text-zinc-900 ring-1 ring-inset ring-highlight placeholder:text-primary-light focus:ring-2 focus:ring-inset focus:ring-accent dark:bg-gray-800 dark:text-white dark:ring-gray-700 dark:focus:ring-accent" id="description" name="description" placeholder="Add a short description..." rows="4"></textarea>
+</div>
+</div>
+</form>
+</main>
+<footer class="sticky bottom-0 w-full bg-background-light dark:bg-background-dark p-4">
+<div class="grid grid-cols-2 gap-4">
+<button class="rounded-xl bg-badge py-4 text-center text-base font-bold text-primary shadow-sm hover:bg-highlight dark:bg-gray-700 dark:text-primary-light dark:hover:bg-gray-600" type="button">Cancel</button>
+<button class="rounded-xl bg-accent py-4 text-center text-base font-bold text-primary shadow-sm hover:opacity-90 dark:bg-accent dark:text-zinc-900" type="submit">Save</button>
+</div>
+</footer>
+</div>
+
+</body></html>
