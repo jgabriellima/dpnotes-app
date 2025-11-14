@@ -230,3 +230,6 @@ Se após seguir este guia o OAuth ainda não funcionar:
 3. Verifique se seguiu TODOS os passos do `docs/OAUTH_SETUP.md`
 4. Certifique-se de que reiniciou o servidor após mudanças
 
+
+
+

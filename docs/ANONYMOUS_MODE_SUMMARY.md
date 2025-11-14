@@ -319,3 +319,6 @@ npx expo start
 **Data:** 10 de Novembro de 2025
 **Próxima Fase:** Storage Local com AsyncStorage
 
+
+
+

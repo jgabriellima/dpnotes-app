@@ -291,3 +291,6 @@ npx expo-linking
 **Implementado em:** 10 de Novembro de 2025
 **Status:** ✅ Autenticação básica funcional, OAuth aguardando configuração externa
 
+
+
+

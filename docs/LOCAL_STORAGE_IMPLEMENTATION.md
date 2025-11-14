@@ -372,3 +372,6 @@ createProject.mutate({ name: 'Test' }); // ← Funciona offline e online!
 **Data:** 10 de Novembro de 2025
 **Próxima Fase:** Adaptar hooks de Documents, Annotations e Labels
 
+
+
+
