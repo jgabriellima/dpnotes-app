@@ -12,6 +12,7 @@ import { type IconProps as LucideIconProps } from 'lucide-react-native';
 // Material Symbols to Lucide mapping
 const iconMap: Record<string, keyof typeof LucideIcons> = {
   // Navigation & Actions
+  'menu': 'Menu',
   'settings': 'Settings',
   'arrow_forward_ios': 'ChevronRight',
   'arrow_back': 'ChevronLeft',
@@ -22,6 +23,7 @@ const iconMap: Record<string, keyof typeof LucideIcons> = {
   'edit': 'Pencil',
   'delete': 'Trash2',
   'search': 'Search',
+  'chevron_right': 'ChevronRight',
   
   // Projects & Documents
   'folder': 'Folder',
@@ -36,11 +38,13 @@ const iconMap: Record<string, keyof typeof LucideIcons> = {
   'play_arrow': 'Play',
   'pause': 'Pause',
   'stop': 'Square',
+  'description': 'FileText',
   
   // Export & Share
   'ios_share': 'Share2',
   'content_copy': 'Copy',
   'download': 'Download',
+  'content_paste': 'Clipboard',
   
   // User & Account
   'person': 'User',
@@ -53,6 +57,12 @@ const iconMap: Record<string, keyof typeof LucideIcons> = {
   'warning': 'AlertTriangle',
   'error': 'AlertCircle',
   'check_circle': 'CheckCircle',
+  
+  // Settings & Alignment
+  'align_horizontal_left': 'AlignLeft',
+  'align_horizontal_right': 'AlignRight',
+  'light_mode': 'Sun',
+  'dark_mode': 'Moon',
 };
 
 interface IconProps extends Omit<LucideIconProps, 'name'> {

@@ -6,6 +6,7 @@
 
 import React from 'react';
 import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { logComponentError } from '../utils/errorHandler';
 
 interface Props {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ interface State {
   hasError: boolean;
   error: Error | null;
   errorInfo: React.ErrorInfo | null;
+  timestamp: string | null;
 }
 
 export class ErrorBoundary extends React.Component<Props, State> {
@@ -24,25 +26,28 @@ export class ErrorBoundary extends React.Component<Props, State> {
       hasError: false,
       error: null,
       errorInfo: null,
+      timestamp: null,
     };
   }
 
-  static getDerivedStateFromError(error: Error): State {
+  static getDerivedStateFromError(error: Error): Partial<State> {
     return {
       hasError: true,
       error,
-      errorInfo: null,
+      timestamp: new Date().toISOString(),
     };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('🔴 [ErrorBoundary] Caught error:', error);
-    console.error('🔴 [ErrorBoundary] Error info:', errorInfo);
-    console.error('🔴 [ErrorBoundary] Component stack:', errorInfo.componentStack);
+    const timestamp = new Date().toISOString();
+    
+    // Log consolidado usando error handler global
+    logComponentError('ErrorBoundary', error, errorInfo);
     
     this.setState({
       error,
       errorInfo,
+      timestamp,
     });
   }
 
@@ -61,21 +66,40 @@ export class ErrorBoundary extends React.Component<Props, State> {
           <View style={styles.errorBox}>
             <Text style={styles.title}>❌ Erro no App</Text>
             
+            {this.state.timestamp && (
+              <Text style={styles.timestamp}>
+                {new Date(this.state.timestamp).toLocaleString('pt-BR')}
+              </Text>
+            )}
+            
             <Text style={styles.subtitle}>Erro capturado:</Text>
             <ScrollView style={styles.errorScroll}>
               <Text style={styles.errorText}>
-                {this.state.error?.toString()}
+                {this.state.error?.name}: {this.state.error?.message}
               </Text>
               
-              {this.state.errorInfo && (
+              {this.state.error?.stack && (
                 <>
-                  <Text style={styles.subtitle}>Stack:</Text>
+                  <Text style={styles.subtitle}>Stack Trace:</Text>
+                  <Text style={styles.errorText}>
+                    {this.state.error.stack}
+                  </Text>
+                </>
+              )}
+              
+              {this.state.errorInfo?.componentStack && (
+                <>
+                  <Text style={styles.subtitle}>Component Stack:</Text>
                   <Text style={styles.errorText}>
                     {this.state.errorInfo.componentStack}
                   </Text>
                 </>
               )}
             </ScrollView>
+
+            <Text style={styles.hint}>
+              💡 Verifique os logs do terminal para mais detalhes
+            </Text>
 
             <Pressable style={styles.button} onPress={this.handleReset}>
               <Text style={styles.buttonText}>Tentar Novamente</Text>
@@ -107,7 +131,20 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     color: '#991b1b',
+    marginBottom: 8,
+  },
+  timestamp: {
+    fontSize: 12,
+    color: '#7f1d1d',
     marginBottom: 16,
+    fontFamily: 'monospace',
+  },
+  hint: {
+    fontSize: 12,
+    color: '#7f1d1d',
+    marginTop: 12,
+    fontStyle: 'italic',
+    textAlign: 'center',
   },
   subtitle: {
     fontSize: 14,

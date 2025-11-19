@@ -7,6 +7,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { EditorDocument, Annotation, WordId, Tag } from '../types/editor.types';
+import { importFromClipboard } from '../services/clipboard/import';
 
 const DOCUMENTS_STORAGE_KEY = '@deep-research-notes:documents';
 
@@ -17,9 +18,11 @@ interface DocumentsState {
   getDocument: (id: string) => EditorDocument | undefined;
   createDocument: (id: string, content: string) => void;
   updateDocumentContent: (id: string, content: string) => void;
+  importDocumentFromClipboard: () => Promise<string>;
   addAnnotation: (documentId: string, annotation: Annotation) => void;
   updateAnnotation: (documentId: string, annotationId: string, updates: Partial<Annotation>) => void;
   deleteAnnotation: (documentId: string, annotationId: string) => void;
+  clearAllAnnotations: (documentId: string) => void;
   getAnnotationsForWords: (documentId: string, wordIds: WordId[]) => Annotation | undefined;
 }
 
@@ -32,10 +35,23 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
       const stored = await AsyncStorage.getItem(DOCUMENTS_STORAGE_KEY);
       if (stored) {
         const documentsArray = JSON.parse(stored) as EditorDocument[];
-        const documentsMap = new Map(documentsArray.map(doc => [doc.id, doc]));
+        
+        // Migrate old documents without timestamps
+        const now = new Date().toISOString();
+        const migratedDocs = documentsArray.map(doc => ({
+          ...doc,
+          createdAt: doc.createdAt || now,
+          updatedAt: doc.updatedAt || now,
+          title: doc.title || 'Sem título',
+        }));
+        
+        const documentsMap = new Map(migratedDocs.map(doc => [doc.id, doc]));
         set({ documents: documentsMap, isLoaded: true });
+        
+        console.log('📚 [DocumentsStore] Loaded documents:', migratedDocs.length);
       } else {
         set({ isLoaded: true });
+        console.log('📚 [DocumentsStore] No stored documents');
       }
     } catch (error) {
       console.error('Error loading documents:', error);
@@ -50,10 +66,14 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
   createDocument: (id: string, content: string) => {
     const { documents } = get();
     
+    const now = new Date().toISOString();
     const newDoc: EditorDocument = {
       id,
       content,
       annotations: [],
+      title: 'Sem título',
+      createdAt: now,
+      updatedAt: now,
     };
 
     const updated = new Map(documents);
@@ -78,7 +98,11 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
     }
 
     const updated = new Map(documents);
-    updated.set(id, { ...doc, content });
+    updated.set(id, { 
+      ...doc, 
+      content,
+      updatedAt: new Date().toISOString(),
+    });
     set({ documents: updated });
 
     // Persist to AsyncStorage
@@ -86,6 +110,25 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
     AsyncStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(documentsArray)).catch(error => {
       console.error('Error saving documents:', error);
     });
+  },
+
+  importDocumentFromClipboard: async () => {
+    try {
+      const { content, wordCount, source } = await importFromClipboard();
+      
+      // Generate unique ID for new document
+      const docId = `doc-${Date.now()}`;
+      
+      // Create document
+      get().createDocument(docId, content);
+      
+      console.log(`📄 Imported document: ${docId} (${wordCount} words, source: ${source})`);
+      
+      return docId;
+    } catch (error) {
+      console.error('Error importing from clipboard:', error);
+      throw error;
+    }
   },
 
   addAnnotation: (documentId: string, annotation: Annotation) => {
@@ -98,6 +141,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
     updated.set(documentId, {
       ...doc,
       annotations: [...doc.annotations, annotation],
+      updatedAt: new Date().toISOString(),
     });
     set({ documents: updated });
 
@@ -140,6 +184,28 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => ({
     updated.set(documentId, {
       ...doc,
       annotations: doc.annotations.filter(ann => ann.id !== annotationId),
+    });
+    set({ documents: updated });
+
+    // Persist to AsyncStorage
+    const documentsArray = Array.from(updated.values());
+    AsyncStorage.setItem(DOCUMENTS_STORAGE_KEY, JSON.stringify(documentsArray)).catch(error => {
+      console.error('Error saving documents:', error);
+    });
+  },
+
+  clearAllAnnotations: (documentId: string) => {
+    const { documents } = get();
+    const doc = documents.get(documentId);
+    
+    if (!doc) return;
+
+    console.log('🧹 [DocumentsStore] Clearing all annotations for document:', documentId);
+
+    const updated = new Map(documents);
+    updated.set(documentId, {
+      ...doc,
+      annotations: [],
     });
     set({ documents: updated });
 

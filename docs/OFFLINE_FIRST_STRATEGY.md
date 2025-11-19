@@ -397,3 +397,4 @@ Estratégia: Last-Write-Wins (mais recente ganha)
 
 
 
+

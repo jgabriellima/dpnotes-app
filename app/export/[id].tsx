@@ -28,26 +28,146 @@ export default function ExportPreviewScreen() {
   const [includeAudio, setIncludeAudio] = useState(true);
   const [includeNotes, setIncludeNotes] = useState(true);
 
+  // Insert annotation markers into text at exact positions
+  const insertAnnotationMarkers = (text: string, annotationsWithDetails: typeof annotations) => {
+    if (!text || annotationsWithDetails.length === 0) return text;
+    
+    // Parse text into words
+    const words = text.split(/\s+/);
+    
+    // Create a map of word positions to annotation indices
+    const wordToAnnotation = new Map<number, number>();
+    
+    annotationsWithDetails.forEach((annotation, annotationIndex) => {
+      if (annotation.marker_id) {
+        // Extract word index from marker_id (format: "p0-w123")
+        const match = annotation.marker_id.match(/w(\d+)/);
+        if (match) {
+          const wordIndex = parseInt(match[1]);
+          wordToAnnotation.set(wordIndex, annotationIndex);
+        }
+      }
+    });
+    
+    // Reconstruct text with markers
+    let result = '';
+    words.forEach((word, index) => {
+      result += word;
+      
+      // Add marker if this word is annotated
+      if (wordToAnnotation.has(index)) {
+        const annotationIndex = wordToAnnotation.get(index)!;
+        result += ` **[T${annotationIndex + 1}]**`;
+      }
+      
+      // Add space (except for last word)
+      if (index < words.length - 1) {
+        result += ' ';
+      }
+    });
+    
+    return result;
+  };
+
+  // Transform annotations to the format expected by generatePrompt
+  const transformAnnotations = (annotationsWithDetails: typeof annotations) => {
+    return annotationsWithDetails.map((annotation, index) => {
+      // Try to extract a meaningful sentence snippet from the annotation
+      // For now, we use marker_id as a placeholder for the selected text
+      const sentenceText = annotation.marker_id 
+        ? `[Seleção: ${annotation.marker_id}]` 
+        : '[Texto selecionado]';
+      
+      const transformed = {
+        id: annotation.id,
+        sentenceIndex: index,
+        sentenceText,
+        textNote: annotation.text_note,
+        labels: annotation.labels,
+        audio: annotation.audio,
+      };
+      
+      console.log('📝 [Export] Transformed annotation:', {
+        id: annotation.id,
+        hasTextNote: !!annotation.text_note,
+        hasLabels: annotation.labels.length > 0,
+        hasAudio: annotation.audio.length > 0,
+      });
+      
+      return transformed;
+    });
+  };
+
   const handleCopyPrompt = async () => {
     if (!document) return;
 
     try {
-      const prompt = generatePrompt(
-        document.title,
-        document.content,
-        annotations,
-        {
-          includeAudioTranscriptions: includeAudio,
-          includeTextNotes: includeNotes,
-          includeLabelDescriptions: true,
-          language: document.language as 'pt' | 'en' | 'es' || 'pt',
+      const transformedAnnotations = transformAnnotations(annotations);
+      
+      console.log('📋 [Export] Generating prompt with:', {
+        annotationsCount: transformedAnnotations.length,
+        includeAudio,
+        includeNotes,
+      });
+      
+      // Generate custom prompt with exact marker positions
+      const sections: string[] = [];
+      
+      // Header
+      sections.push('Por favor, processe o texto abaixo considerando as anotações fornecidas.');
+      sections.push('');
+      
+      // Summary of Annotations
+      sections.push('## Sumário das Anotações');
+      sections.push('');
+      
+      transformedAnnotations.forEach((annotation, index) => {
+        const refId = `T${index + 1}`;
+        sections.push(`**[${refId}]**`);
+        
+        // Labels
+        if (annotation.labels.length > 0) {
+          annotation.labels.forEach(label => {
+            sections.push(`- Label: **${label.name}**`);
+            if (includeNotes && label.description) {
+              sections.push(`  ${label.description}`);
+            }
+          });
         }
-      );
+        
+        // Text Note
+        if (includeNotes && annotation.textNote) {
+          sections.push(`- Nota: ${annotation.textNote}`);
+        }
+        
+        // Audio Transcription
+        if (includeAudio && annotation.audio.length > 0) {
+          annotation.audio.forEach(audio => {
+            if (audio.transcription) {
+              sections.push(`- Transcrição de áudio: "${audio.transcription}"`);
+            }
+          });
+        }
+        
+        sections.push('');
+      });
+      
+      // Annotated Text with markers at exact positions
+      sections.push('## Texto Anotado');
+      sections.push('');
+      sections.push(`**${document.title}**`);
+      sections.push('');
+      sections.push(insertAnnotationMarkers(document.content, annotations));
+      
+      const prompt = sections.join('\n');
+
+      console.log('✅ [Export] Prompt generated, length:', prompt.length);
+      console.log('📄 [Export] Prompt preview:', prompt.substring(0, 200) + '...');
 
       await setClipboardContent(prompt);
       Alert.alert('Sucesso', 'Prompt copiado para o clipboard!');
     } catch (error) {
-      console.error('Copy error:', error);
+      console.error('❌ [Export] Copy error:', error);
       Alert.alert('Erro', 'Não foi possível copiar o prompt.');
     }
   };
@@ -68,18 +188,56 @@ export default function ExportPreviewScreen() {
     );
   }
 
-  const stats = generateStatistics(annotations);
-  const prompt = generatePrompt(
-    document.title,
-    document.content,
-    annotations,
-    {
-      includeAudioTranscriptions: includeAudio,
-      includeTextNotes: includeNotes,
-      includeLabelDescriptions: true,
-      language: document.language as 'pt' | 'en' | 'es' || 'pt',
-    }
-  );
+  const transformedAnnotations = transformAnnotations(annotations);
+  const stats = generateStatistics(transformedAnnotations);
+  
+  // Generate preview prompt with exact marker positions (same as handleCopyPrompt)
+  const generatePreviewPrompt = () => {
+    const sections: string[] = [];
+    
+    sections.push('Por favor, processe o texto abaixo considerando as anotações fornecidas.');
+    sections.push('');
+    sections.push('## Sumário das Anotações');
+    sections.push('');
+    
+    transformedAnnotations.forEach((annotation, index) => {
+      const refId = `T${index + 1}`;
+      sections.push(`**[${refId}]**`);
+      
+      if (annotation.labels.length > 0) {
+        annotation.labels.forEach(label => {
+          sections.push(`- Label: **${label.name}**`);
+          if (includeNotes && label.description) {
+            sections.push(`  ${label.description}`);
+          }
+        });
+      }
+      
+      if (includeNotes && annotation.textNote) {
+        sections.push(`- Nota: ${annotation.textNote}`);
+      }
+      
+      if (includeAudio && annotation.audio.length > 0) {
+        annotation.audio.forEach(audio => {
+          if (audio.transcription) {
+            sections.push(`- Transcrição de áudio: "${audio.transcription}"`);
+          }
+        });
+      }
+      
+      sections.push('');
+    });
+    
+    sections.push('## Texto Anotado');
+    sections.push('');
+    sections.push(`**${document.title}**`);
+    sections.push('');
+    sections.push(insertAnnotationMarkers(document.content, annotations));
+    
+    return sections.join('\n');
+  };
+  
+  const prompt = generatePreviewPrompt();
 
   return (
     <>
@@ -172,7 +330,7 @@ export default function ExportPreviewScreen() {
                 Sumário das Anotações
               </Text>
               
-              {annotations.map((annotation, index) => (
+              {transformedAnnotations.map((annotation, index) => (
                 <View
                   key={annotation.id}
                   className="bg-white rounded-xl p-4"

@@ -29,6 +29,9 @@ export interface EditorDocument {
   id: string;
   content: string;
   annotations: Annotation[];
+  title?: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface WordData {

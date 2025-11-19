@@ -16,8 +16,10 @@ import { Audio } from 'expo-av';
 
 interface UseAudioRecorderReturn {
   isRecording: boolean;
+  isPaused: boolean;
   uri: string | null;
   duration: number;
+  recording: Audio.Recording | null;
   start: () => Promise<void>;
   stop: () => Promise<string | null>;
   pause: () => Promise<void>;
@@ -28,6 +30,7 @@ interface UseAudioRecorderReturn {
 export function useAudioRecorder(): UseAudioRecorderReturn {
   const recorderRef = useRef<Audio.Recording | null>(null);
   const [isRecording, setIsRecording] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
   const [uri, setUri] = useState<string | null>(null);
   const [duration, setDuration] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -74,6 +77,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       await recording.startAsync();
       recorderRef.current = recording;
       setIsRecording(true);
+      setIsPaused(false);
       setDuration(0);
 
       // Update duration every second
@@ -123,6 +127,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
       setUri(fileUri);
       recorderRef.current = null;
       setIsRecording(false);
+      setIsPaused(false);
 
       return fileUri;
     } catch (error) {
@@ -140,6 +145,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
 
       await rec.pauseAsync();
       setIsRecording(false);
+      setIsPaused(true);
       
       // Pause the interval
       if (intervalRef.current) {
@@ -159,6 +165,7 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
 
       await rec.startAsync();
       setIsRecording(true);
+      setIsPaused(false);
       
       // Restart the interval
       intervalRef.current = setInterval(async () => {
@@ -180,8 +187,10 @@ export function useAudioRecorder(): UseAudioRecorderReturn {
 
   return {
     isRecording,
+    isPaused,
     uri,
     duration,
+    recording: recorderRef.current,
     start,
     stop,
     pause,

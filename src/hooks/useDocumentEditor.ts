@@ -8,6 +8,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useDocumentsStore } from '../stores/documentsStore';
 import { useTagsStore } from '../stores/tagsStore';
 import type { WordId, Annotation, Tag } from '../types/editor.types';
+import type { PopoverPosition } from '../components/editor/AnnotationPopover';
+import type { SelectionData } from '../components/editor/SelectableTextEditor';
 
 export function useDocumentEditor(documentId: string) {
   console.log('🔧 [useDocumentEditor] Initializing for documentId:', documentId);
@@ -16,17 +18,17 @@ export function useDocumentEditor(documentId: string) {
     getDocument,
     updateDocumentContent,
     addAnnotation,
+    updateAnnotation,
     deleteAnnotation,
   } = useDocumentsStore();
 
   const { incrementUsage } = useTagsStore();
 
   const [content, setContent] = useState('');
-  const [selectedWords, setSelectedWords] = useState<Set<WordId>>(new Set());
+  const [selectedWords, setSelectedWords] = useState<WordId[]>([]);
+  const [selectedText, setSelectedText] = useState('');
+  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition | null>(null);
   const [showAnnotationPopover, setShowAnnotationPopover] = useState(false);
-  const [showTextModal, setShowTextModal] = useState(false);
-  const [showAudioModal, setShowAudioModal] = useState(false);
-  const [showTagsModal, setShowTagsModal] = useState(false);
 
   console.log('🔧 [useDocumentEditor] Current content length:', content.length);
 
@@ -60,87 +62,83 @@ All annotations are stored locally and can be exported to Markdown format.`;
     updateDocumentContent(documentId, newContent);
   }, [documentId, updateDocumentContent]);
 
-  // Handle selection changes
-  const handleSelectionChange = useCallback((words: Set<WordId>) => {
-    setSelectedWords(words);
-    setShowAnnotationPopover(words.size > 0);
+  // Handle selection changes (from SelectableTextEditor)
+  const handleSelectionChange = useCallback((data: SelectionData) => {
+    setSelectedText(data.text);
+    setPopoverPosition(data.bounds);
+    setSelectedWords(data.wordIds);
+    
+    // Show popover if we have bounds (position)
+    // For new selections: require text
+    // For editing annotations: allow empty text (e.g., audio annotations)
+    const shouldShow = !!data.bounds && (data.text.length > 0 || data.wordIds.length > 0);
+    setShowAnnotationPopover(shouldShow);
+    
+    console.log('🔧 [useDocumentEditor] Selection changed:', {
+      text: data.text,
+      wordIds: data.wordIds,
+      shouldShow,
+    });
   }, []);
 
   // Get selected text
   const getSelectedText = useCallback((): string => {
-    if (selectedWords.size === 0) return '';
-    
-    const wordIds = Array.from(selectedWords).sort((a, b) => {
-      const [aPara, aWord] = a.split('-').map(s => parseInt(s.substring(1)));
-      const [bPara, bWord] = b.split('-').map(s => parseInt(s.substring(1)));
-      if (aPara !== bPara) return aPara - bPara;
-      return aWord - bWord;
-    });
-
-    const paragraphs = content.split('\n');
-    const words: string[] = [];
-
-    wordIds.forEach(wordId => {
-      const [paraStr, wordStr] = wordId.split('-');
-      const paraIndex = parseInt(paraStr.substring(1));
-      const wordIndex = parseInt(wordStr.substring(1));
-      
-      const paragraph = paragraphs[paraIndex];
-      if (paragraph) {
-        const wordTexts = paragraph.split(/(\s+)/).filter(w => w.trim().length > 0);
-        if (wordTexts[wordIndex]) {
-          words.push(wordTexts[wordIndex]);
-        }
-      }
-    });
-
-    return words.join(' ');
-  }, [selectedWords, content]);
+    return selectedText;
+  }, [selectedText]);
 
   // Create text annotation
   const handleCreateTextAnnotation = useCallback((description: string) => {
+    console.log('🔧 [useDocumentEditor] Creating text annotation with wordIds:', selectedWords);
+    
     const annotation: Annotation = {
       id: `ann-${Date.now()}`,
-      wordIds: Array.from(selectedWords),
+      wordIds: selectedWords,
       type: 'text',
       textNote: description,
       createdAt: new Date(),
     };
 
     addAnnotation(documentId, annotation);
-    setSelectedWords(new Set());
-    setShowTextModal(false);
+    setSelectedWords([]);
     setShowAnnotationPopover(false);
   }, [documentId, selectedWords, addAnnotation]);
 
   // Create audio annotation
   const handleCreateAudioAnnotation = useCallback((
     audioUri: string,
-    audioBytes: Uint8Array,
-    transcription: string,
-    duration: number
+    duration: number,
+    transcription?: string
   ) => {
+    console.log('🔧 [useDocumentEditor] Creating audio annotation with wordIds:', selectedWords);
+    console.log('🔧 [useDocumentEditor] Transcription:', transcription);
+    
     const annotation: Annotation = {
       id: `ann-${Date.now()}`,
-      wordIds: Array.from(selectedWords),
+      wordIds: selectedWords,
       type: 'audio',
       audioUri,
-      audioBytes,
-      transcription,
+      audioBytes: new Uint8Array(), // Empty for now, can be loaded from URI
+      transcription: transcription || '', // Save transcription if available
       createdAt: new Date(),
     };
 
     addAnnotation(documentId, annotation);
-    setSelectedWords(new Set());
-    setShowAudioModal(false);
+    setSelectedWords([]);
     setShowAnnotationPopover(false);
   }, [documentId, selectedWords, addAnnotation]);
 
   // Create tags annotation
-  const handleCreateTagsAnnotation = useCallback((tags: Tag[]) => {
+  const handleCreateTagsAnnotation = useCallback((tagLabels: string[]) => {
+    console.log('🔧 [useDocumentEditor] Creating tags annotation with wordIds:', selectedWords);
+    
+    const tags: Tag[] = tagLabels.map(label => ({
+      label,
+      description: label, // Use label as description
+    }));
+
     const annotation: Annotation = {
       id: `ann-${Date.now()}`,
-      wordIds: Array.from(selectedWords),
+      wordIds: selectedWords,
       type: 'tags',
       tags,
       createdAt: new Date(),
@@ -153,52 +151,80 @@ All annotations are stored locally and can be exported to Markdown format.`;
       incrementUsage(tag.label);
     });
 
-    setSelectedWords(new Set());
-    setShowTagsModal(false);
+    setSelectedWords([]);
     setShowAnnotationPopover(false);
   }, [documentId, selectedWords, addAnnotation, incrementUsage]);
 
-  // Popover actions
-  const handleTextNotePress = useCallback(() => {
-    setShowAnnotationPopover(false);
-    setShowTextModal(true);
-  }, []);
-
-  const handleAudioPress = useCallback(() => {
-    setShowAnnotationPopover(false);
-    setShowAudioModal(true);
-  }, []);
-
-  const handleTagsPress = useCallback(() => {
-    setShowAnnotationPopover(false);
-    setShowTagsModal(true);
-  }, []);
-
   const handleClosePopover = useCallback(() => {
     setShowAnnotationPopover(false);
-    setSelectedWords(new Set());
+    setSelectedWords([]);
+    setSelectedText('');
+    setPopoverPosition(null);
   }, []);
+
+  // Update annotation (for editing existing annotations)
+  const handleUpdateAnnotation = useCallback((
+    annotationId: string,
+    type: 'text' | 'audio' | 'tags',
+    data: any
+  ) => {
+    const updates: Partial<Annotation> = { type };
+
+    if (type === 'text') {
+      updates.textNote = data;
+      // Clear other type-specific data
+      updates.audioUri = undefined;
+      updates.audioBytes = undefined;
+      updates.transcription = undefined;
+      updates.tags = undefined;
+    } else if (type === 'audio') {
+      updates.audioUri = data.uri;
+      updates.audioBytes = new Uint8Array(); // Empty for now
+      updates.transcription = data.transcription || ''; // Save transcription from data
+      console.log('🔧 [useDocumentEditor] Updated audio annotation with transcription:', data.transcription);
+      // Clear other type-specific data
+      updates.textNote = undefined;
+      updates.tags = undefined;
+    } else if (type === 'tags') {
+      const tagLabels = data as string[];
+      updates.tags = tagLabels.map(label => ({
+        label,
+        description: label,
+      }));
+      // Increment usage for all tags
+      tagLabels.forEach(label => {
+        incrementUsage(label);
+      });
+      // Clear other type-specific data
+      updates.textNote = undefined;
+      updates.audioUri = undefined;
+      updates.audioBytes = undefined;
+      updates.transcription = undefined;
+    }
+
+    updateAnnotation(documentId, annotationId, updates);
+  }, [documentId, updateAnnotation, incrementUsage]);
+
+  // Delete annotation
+  const handleDeleteAnnotation = useCallback((annotationId: string) => {
+    deleteAnnotation(documentId, annotationId);
+  }, [documentId, deleteAnnotation]);
 
   return {
     content,
     selectedWords,
+    selectedText,
+    popoverPosition,
     showAnnotationPopover,
-    showTextModal,
-    showAudioModal,
-    showTagsModal,
     handleContentChange,
     handleSelectionChange,
     getSelectedText,
     handleCreateTextAnnotation,
     handleCreateAudioAnnotation,
     handleCreateTagsAnnotation,
-    handleTextNotePress,
-    handleAudioPress,
-    handleTagsPress,
+    handleUpdateAnnotation,
+    handleDeleteAnnotation,
     handleClosePopover,
-    setShowTextModal,
-    setShowAudioModal,
-    setShowTagsModal,
   };
 }
 

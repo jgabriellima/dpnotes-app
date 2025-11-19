@@ -11,7 +11,11 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { AuthProvider } from '../src/contexts/AuthContext';
+import { initErrorHandler } from '../src/utils/errorHandler';
 import '../global.css';
+
+// Inicializa error handler ANTES de tudo
+initErrorHandler();
 
 // Create a client
 const queryClient = new QueryClient({
@@ -35,10 +39,7 @@ export default function RootLayout() {
               translucent={false} 
             />
             <Stack screenOptions={{ headerShown: false }}>
-              <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-              <Stack.Screen name="auth/signin" options={{ headerShown: false }} />
-              <Stack.Screen name="auth/signup" options={{ headerShown: false }} />
-              <Stack.Screen name="projects/index" options={{ headerShown: false }} />
+              <Stack.Screen name="index" options={{ headerShown: false }} />
               <Stack.Screen name="editor/[id]" options={{ headerShown: false }} />
               <Stack.Screen name="export/[id]" options={{ headerShown: false }} />
             </Stack>

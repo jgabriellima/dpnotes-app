@@ -8,7 +8,8 @@ import React, { useState } from 'react';
 import { View, Text, Pressable, Modal, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { AudioRecorder } from '../audio/AudioRecorder';
 import { transcribeAudio } from '../../services/transcription';
-import * as FileSystem from 'expo-file-system';
+import { File } from 'expo-file-system/next';
+import * as FileSystem from 'expo-file-system/legacy';
 import { Icon } from '../ui/Icon';
 
 interface AnnotationAudioModalProps {
@@ -42,9 +43,9 @@ export function AnnotationAudioModal({
     try {
       setIsTranscribing(true);
 
-      // Read audio file as bytes
-      const audioInfo = await FileSystem.getInfoAsync(audioUri);
-      if (!audioInfo.exists) {
+      // Check if audio file exists using new File API
+      const file = new File(audioUri);
+      if (!file.exists) {
         throw new Error('Audio file not found');
       }
 
