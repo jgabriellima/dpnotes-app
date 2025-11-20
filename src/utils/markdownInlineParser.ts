@@ -35,7 +35,7 @@ export function parseInlineMarkdown(text: string): InlineSegment[] {
 
   // Bold: **text** or __text__
   const boldRegex = /(\*\*|__)(.+?)\1/g;
-  let match;
+  let match: RegExpExecArray | null;
   while ((match = boldRegex.exec(text)) !== null) {
     patterns.push({
       start: match.index,
@@ -49,11 +49,12 @@ export function parseInlineMarkdown(text: string): InlineSegment[] {
   // Italic: *text* or _text_ (but not part of bold)
   const italicRegex = /(?<!\*)\*(?!\*)([^*]+?)\*(?!\*)|(?<!_)_(?!_)([^_]+?)_(?!_)/g;
   while ((match = italicRegex.exec(text)) !== null) {
+    if (!match) continue;
     const content = match[1] || match[2];
     // Skip if this overlaps with a bold pattern
     const overlaps = patterns.some(p => 
-      (match.index >= p.start && match.index < p.end) ||
-      (match.index + match[0].length > p.start && match.index + match[0].length <= p.end)
+      (match!.index >= p.start && match!.index < p.end) ||
+      (match!.index + match![0].length > p.start && match!.index + match![0].length <= p.end)
     );
     if (!overlaps) {
       patterns.push({

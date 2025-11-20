@@ -7,7 +7,6 @@
 
 import React from 'react';
 import * as LucideIcons from 'lucide-react-native';
-import { type IconProps as LucideIconProps } from 'lucide-react-native';
 
 // Material Symbols to Lucide mapping
 const iconMap: Record<string, keyof typeof LucideIcons> = {
@@ -65,13 +64,16 @@ const iconMap: Record<string, keyof typeof LucideIcons> = {
   'dark_mode': 'Moon',
 };
 
-interface IconProps extends Omit<LucideIconProps, 'name'> {
+interface IconProps {
   name: string;
+  size?: number;
+  color?: string;
+  strokeWidth?: number;
 }
 
 export const Icon: React.FC<IconProps> = ({ name, size = 24, color = '#2D313E', ...props }) => {
   const iconName = iconMap[name] || 'HelpCircle';
-  const IconComponent = LucideIcons[iconName] as React.ComponentType<LucideIconProps>;
+  const IconComponent = LucideIcons[iconName] as React.ComponentType<any>;
 
   if (!IconComponent) {
     console.warn(`Icon "${name}" not found in mapping. Using fallback.`);

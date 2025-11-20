@@ -9,7 +9,7 @@ import { useDocumentsStore } from '../stores/documentsStore';
 import { useTagsStore } from '../stores/tagsStore';
 import type { WordId, Annotation, Tag } from '../types/editor.types';
 import type { PopoverPosition } from '../components/editor/AnnotationPopover';
-import type { SelectionData } from '../components/editor/SelectableTextEditor';
+import type { SelectionData } from '../components/editor/WebViewSelectableEditor';
 
 export function useDocumentEditor(documentId: string) {
   console.log('🔧 [useDocumentEditor] Initializing for documentId:', documentId);

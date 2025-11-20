@@ -93,7 +93,7 @@ export function initErrorHandler() {
     }
     
     if (originalRejectionHandler) {
-      originalRejectionHandler(event);
+      originalRejectionHandler.call(window, event);
     }
   };
 

@@ -1,50 +1,68 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { router } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
 import { useDocumentsStore } from '../src/stores/documentsStore';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
 
 export default function Index() {
   const [isInitialized, setIsInitialized] = useState(false);
 
+  const hideSplash = useCallback(async () => {
+    try {
+      await SplashScreen.hideAsync();
+    } catch (e) {
+      console.warn('Error hiding splash screen:', e);
+    }
+  }, []);
+
   useEffect(() => {
     const initializeApp = async () => {
-      console.log('🚀 [App] Initializing...');
-      
-      // Get store methods
-      const { loadDocuments, documents } = useDocumentsStore.getState();
-      
-      // Load documents from storage
-      await loadDocuments();
-      
-      // Get fresh state after loading
-      const { documents: freshDocs } = useDocumentsStore.getState();
-      
-      // Get all documents sorted by last modified
-      const docsArray = Array.from(freshDocs.values());
-      const sortedDocs = docsArray.sort((a, b) => {
-        const dateA = new Date(b.updatedAt || b.createdAt).getTime();
-        const dateB = new Date(a.updatedAt || a.createdAt).getTime();
-        return dateA - dateB;
-      });
+      try {
+        console.log('🚀 [App] Initializing...');
+        
+        // Get store methods
+        const { loadDocuments, documents } = useDocumentsStore.getState();
+        
+        // Load documents from storage
+        await loadDocuments();
+        
+        // Get fresh state after loading
+        const { documents: freshDocs } = useDocumentsStore.getState();
+        
+        // Get all documents sorted by last modified
+        const docsArray = Array.from(freshDocs.values());
+        const sortedDocs = docsArray.sort((a, b) => {
+          const dateA = new Date(b.updatedAt || b.createdAt).getTime();
+          const dateB = new Date(a.updatedAt || a.createdAt).getTime();
+          return dateA - dateB;
+        });
 
-      console.log('📚 [App] Documents loaded:', sortedDocs.length);
+        console.log('📚 [App] Documents loaded:', sortedDocs.length);
 
-      // If there's a last accessed note, open it
-      if (sortedDocs.length > 0 && sortedDocs[0].id) {
-        console.log('📖 [App] Opening last note:', sortedDocs[0].id);
-        router.replace(`/editor/${sortedDocs[0].id}`);
-      } else {
-        // No notes yet - create a blank one and open it (notes-first approach)
-        console.log('📝 [App] No notes found, creating first note');
-        const newId = `doc-${Date.now()}`;
-        router.replace(`/editor/${newId}`);
+        // Hide splash screen before navigation
+        await hideSplash();
+
+        // If there's a last accessed note, open it
+        if (sortedDocs.length > 0 && sortedDocs[0].id) {
+          console.log('📖 [App] Opening last note:', sortedDocs[0].id);
+          router.replace(`/editor/${sortedDocs[0].id}`);
+        } else {
+          // No notes yet - create a blank one and open it (notes-first approach)
+          console.log('📝 [App] No notes found, creating first note');
+          const newId = `doc-${Date.now()}`;
+          router.replace(`/editor/${newId}`);
+        }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('❌ [App] Initialization error:', error);
+        // Hide splash even on error
+        await hideSplash();
       }
-      
-      setIsInitialized(true);
     };
 
     initializeApp();
-  }, []);
+  }, [hideSplash]);
 
   // Show loading while initializing
   return (

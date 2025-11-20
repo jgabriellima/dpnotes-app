@@ -25,6 +25,8 @@ export interface PopoverPosition {
   y: number;
   width?: number;
   height?: number;
+  touchX?: number;
+  touchY?: number;
 }
 
 export interface AnnotationPopoverProps {
@@ -481,31 +483,34 @@ export function AnnotationPopover({
         {/* MODE: Text Input */}
         {mode === 'text' && (
           <View style={styles.contentContainer}>
-            {isEditing && (
+            {isEditing && (() => {
+              const currentMode = mode as PopoverMode;
+              return (
               <View style={styles.typeTabs}>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'text' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'text' && styles.typeTabActive]}
                   onPress={() => setMode('text')}
                 >
-                  <Icon name="edit" size={16} color={mode === 'text' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'text' && styles.typeTabTextActive]}>Texto</Text>
+                  <Icon name="edit" size={16} color={currentMode === 'text' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'text' && styles.typeTabTextActive]}>Texto</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'audio' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'audio' && styles.typeTabActive]}
                   onPress={() => setMode('audio')}
                 >
-                  <Icon name="mic" size={16} color={mode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
+                  <Icon name="mic" size={16} color={currentMode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'tags' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'tags' && styles.typeTabActive]}
                   onPress={() => setMode('tags')}
                 >
-                  <Icon name="sell" size={16} color={mode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
+                  <Icon name="sell" size={16} color={currentMode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
                 </Pressable>
               </View>
-            )}
+              );
+            })()}
             <TextInput
               style={styles.textInput}
               placeholder="Adicione sua nota..."
@@ -552,31 +557,34 @@ export function AnnotationPopover({
         {/* MODE: Audio - Player or Recorder */}
         {mode === 'audio' && (
           <View style={styles.contentContainer}>
-            {isEditing && (
+            {isEditing && (() => {
+              const currentMode = mode as PopoverMode;
+              return (
               <View style={styles.typeTabs}>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'text' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'text' && styles.typeTabActive]}
                   onPress={() => setMode('text')}
                 >
-                  <Icon name="edit" size={16} color={mode === 'text' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'text' && styles.typeTabTextActive]}>Texto</Text>
+                  <Icon name="edit" size={16} color={currentMode === 'text' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'text' && styles.typeTabTextActive]}>Texto</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'audio' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'audio' && styles.typeTabActive]}
                   onPress={() => setMode('audio')}
                 >
-                  <Icon name="mic" size={16} color={mode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
+                  <Icon name="mic" size={16} color={currentMode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'tags' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'tags' && styles.typeTabActive]}
                   onPress={() => setMode('tags')}
                 >
-                  <Icon name="sell" size={16} color={mode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
+                  <Icon name="sell" size={16} color={currentMode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
                 </Pressable>
               </View>
-            )}
+              );
+            })()}
             
             {/* Show AudioPlayer if editing and has audio */}
             {isEditing && editingAnnotation?.audioUri && !showAudioRecorder ? (
@@ -618,31 +626,34 @@ export function AnnotationPopover({
         {/* MODE: Tags Selector */}
         {mode === 'tags' && (
           <View style={styles.contentContainer}>
-            {isEditing && (
+            {isEditing && (() => {
+              const currentMode = mode as PopoverMode;
+              return (
               <View style={styles.typeTabs}>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'text' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'text' && styles.typeTabActive]}
                   onPress={() => setMode('text')}
                 >
-                  <Icon name="edit" size={16} color={mode === 'text' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'text' && styles.typeTabTextActive]}>Texto</Text>
+                  <Icon name="edit" size={16} color={currentMode === 'text' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'text' && styles.typeTabTextActive]}>Texto</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'audio' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'audio' && styles.typeTabActive]}
                   onPress={() => setMode('audio')}
                 >
-                  <Icon name="mic" size={16} color={mode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
+                  <Icon name="mic" size={16} color={currentMode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, mode === 'tags' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'tags' && styles.typeTabActive]}
                   onPress={() => setMode('tags')}
                 >
-                  <Icon name="sell" size={16} color={mode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, mode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
+                  <Icon name="sell" size={16} color={currentMode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
+                  <Text style={[styles.typeTabText, currentMode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
                 </Pressable>
               </View>
-            )}
+              );
+            })()}
             <View style={styles.tagsContainer}>
               {tags.map((tag) => (
                 <Pressable
@@ -734,7 +745,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 4,
     paddingHorizontal: 12,
-    cursor: 'move',
   },
   dragHandle: {
     width: 32,

@@ -17,7 +17,7 @@ const ANNOTATION_STYLES = {
     borderColor: '#3B82F6',
     icon: '🎤',
   },
-  tag: {
+  tags: {
     color: '#D1FAE5', // Green
     borderColor: '#10B981',
     icon: '🏷️',

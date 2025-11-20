@@ -71,31 +71,37 @@ function EditorScreenContent() {
   // Handle Android back button
   useEffect(() => {
     const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-      // If popover is visible, close it instead of navigating back
+      // Close settings modal first
+      if (showSettings) {
+        console.log('⬅️ [EditorScreen] Back pressed - closing settings');
+        setShowSettings(false);
+        return true;
+      }
+      
+      // Close notes menu
+      if (showNotesMenu) {
+        console.log('⬅️ [EditorScreen] Back pressed - closing notes menu');
+        setShowNotesMenu(false);
+        return true;
+      }
+      
+      // Close popover
       if (showAnnotationPopover) {
         console.log('⬅️ [EditorScreen] Back pressed - closing popover');
         handlePopoverClose();
-        return true; // Prevent default back behavior
+        return true;
       }
       
-      // Otherwise, allow default back behavior (navigate back)
-      console.log('⬅️ [EditorScreen] Back pressed - navigating back');
-      return false;
+      // If nothing is open, don't allow back (notes-first - stay in the app)
+      console.log('⬅️ [EditorScreen] Back pressed - ignoring (notes-first)');
+      return true; // Prevent back navigation
     });
 
     return () => backHandler.remove();
-  }, [showAnnotationPopover]);
+  }, [showAnnotationPopover, showSettings, showNotesMenu]);
 
   // Get current document
   const document = getDocument(documentId);
-
-  const handleBack = () => {
-    router.back();
-  };
-
-  const handleSaveAndClose = async () => {
-    handleBack();
-  };
 
   // Insert annotation markers into text at exact positions
   const insertAnnotationMarkers = (text: string, annotations: Annotation[]) => {
@@ -395,29 +401,15 @@ function EditorScreenContent() {
           elevation: 2,
         }}
       >
-        {/* Top Row: Menu, Title, Save */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+        {/* Top Row: Menu and Title */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
           <Pressable onPress={() => setShowNotesMenu(true)} style={{ padding: 8 }}>
             <Icon name="menu" size={24} color="#2D313E" />
           </Pressable>
           
-          <Text className="text-lg font-bold flex-1 text-center" style={{ color: '#18181b' }} numberOfLines={1}>
+          <Text className="text-lg font-bold flex-1" style={{ color: '#18181b' }} numberOfLines={1}>
             {displayTitle}
           </Text>
-
-          <Pressable 
-            onPress={handleSaveAndClose}
-            style={{ 
-              backgroundColor: '#10b981', 
-              paddingHorizontal: 16, 
-              paddingVertical: 8, 
-              borderRadius: 8 
-            }}
-          >
-            <Text style={{ color: '#ffffff', fontWeight: '600', fontSize: 14 }}>
-              Done
-            </Text>
-          </Pressable>
         </View>
 
         {/* Action Row: Tools */}

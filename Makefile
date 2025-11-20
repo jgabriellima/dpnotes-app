@@ -43,6 +43,7 @@ help: ## Show this help message
 	@echo "  make install      - Install dependencies"
 	@echo "  make setup-supabase - Setup Supabase configuration"
 	@echo "  make stt-provider  - Switch STT provider (groq/local)"
+	@echo "  make splash-assets - Generate splash screen assets"
 	@echo ""
 
 setup: check-env install ## Initial project setup
@@ -222,4 +223,14 @@ stt-provider: ## Switch STT provider (groq/local)
 		fi; \
 		echo "$(GREEN)✓ STT provider set to: groq$(NC)"; \
 	fi
+
+# Splash Assets
+splash-assets: ## Generate splash screen assets from logo
+	@echo "$(BLUE)Generating splash screen assets...$(NC)"
+	@if [ ! -f "scripts/generate-splash-assets.sh" ]; then \
+		echo "$(RED)✗ Script not found: scripts/generate-splash-assets.sh$(NC)"; \
+		exit 1; \
+	fi
+	@bash scripts/generate-splash-assets.sh
+	@echo "$(GREEN)✓ Assets generated successfully!$(NC)"
 
