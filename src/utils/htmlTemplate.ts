@@ -359,8 +359,8 @@ export const buildHtmlFromMarkdown = (
             selection.removeAllRanges();
             selection.addRange(range);
             
-            // Enviar seleção em tempo real
-            sendSelection();
+            // NÃO enviar seleção durante o arraste - apenas atualizar visualmente
+            // A seleção será enviada apenas no touchend para melhor UX
           } catch (err) {
             console.error('Selection error:', err);
           }
@@ -369,23 +369,13 @@ export const buildHtmlFromMarkdown = (
       
       document.addEventListener('touchend', function(e) {
         if (isSelecting && hasMovedEnough) {
-          // Seleção final
+          // Enviar seleção APENAS quando usuário soltar o dedo
           setTimeout(sendSelection, 50);
         }
         
         isSelecting = false;
         startNode = null;
         hasMovedEnough = false;
-      });
-      
-      // Fallback: monitor selectionchange também
-      document.addEventListener('selectionchange', function() {
-        if (!isSelecting) return; // Só durante nosso touch
-        
-        if (window.__selectionTimeout) {
-          clearTimeout(window.__selectionTimeout);
-        }
-        window.__selectionTimeout = setTimeout(sendSelection, 50);
       });
       
       console.log('✅ Custom selection script loaded');

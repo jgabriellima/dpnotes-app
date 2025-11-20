@@ -6,8 +6,16 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Dimensions, Animated, TextInput, KeyboardAvoidingView, Platform, Keyboard, PanResponder } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Dimensions, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import Animated, { 
+  useSharedValue, 
+  useAnimatedStyle, 
+  withTiming, 
+  withSpring,
+  runOnJS,
+} from 'react-native-reanimated';
 import { Icon } from '../ui/Icon';
 import { AudioRecorder } from '../audio/AudioRecorder';
 import { AudioPlayer } from '../audio/AudioPlayer';
@@ -70,56 +78,47 @@ export function AnnotationPopover({
   const [isDragging, setIsDragging] = useState(false);
   const [manualOffset, setManualOffset] = useState({ x: 0, y: 0 });
   
-  const fadeAnim = useRef(new Animated.Value(0)).current;
-  const panX = useRef(new Animated.Value(0)).current;
-  const panY = useRef(new Animated.Value(0)).current;
+  // Reanimated shared values for better performance
+  const opacity = useSharedValue(0);
+  const scale = useSharedValue(0.9);
+  const translateX = useSharedValue(0);
+  const translateY = useSharedValue(0);
+  const savedTranslateX = useSharedValue(0);
+  const savedTranslateY = useSharedValue(0);
+  
   const isEditing = !!editingAnnotation;
 
-  // Create PanResponder for dragging
-  const panResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        setIsDragging(true);
-        // Set offset to current manual offset, and value to 0
-        // This allows the drag to start from the current position
-        panX.setOffset(manualOffset.x);
-        panY.setOffset(manualOffset.y);
-        panX.setValue(0);
-        panY.setValue(0);
-      },
-      onPanResponderMove: Animated.event(
-        [null, { dx: panX, dy: panY }],
-        { useNativeDriver: false }
-      ),
-      onPanResponderRelease: (_, gesture) => {
-        setIsDragging(false);
-        
-        // Calculate new offset by adding gesture delta
-        const newOffsetX = manualOffset.x + gesture.dx;
-        const newOffsetY = manualOffset.y + gesture.dy;
-        
-        console.log('🎯 [Popover] Drag release:', {
-          oldOffset: manualOffset,
-          gesture: { dx: gesture.dx, dy: gesture.dy },
-          newOffset: { x: newOffsetX, y: newOffsetY },
-        });
-        
-        // Flatten offset into value FIRST (before updating state)
-        panX.flattenOffset();
-        panY.flattenOffset();
-        
-        // Now update the manual offset state
-        setManualOffset({ x: newOffsetX, y: newOffsetY });
-        
-        // And set the animated values to the new offset
-        // (they're already at newOffset because of flattenOffset, but let's be explicit)
-        panX.setValue(newOffsetX);
-        panY.setValue(newOffsetY);
-      },
+  // Helper function for logging from worklet (safe wrapper)
+  const logDragRelease = (offsetX: number, offsetY: number) => {
+    console.log('🎯 [Popover] Drag release:', {
+      newOffset: { x: offsetX, y: offsetY },
+    });
+  };
+
+  // Create Pan Gesture for dragging (runs on UI thread for better performance)
+  const panGesture = Gesture.Pan()
+    .onStart(() => {
+      'worklet';
+      runOnJS(setIsDragging)(true);
+      savedTranslateX.value = translateX.value;
+      savedTranslateY.value = translateY.value;
     })
-  ).current;
+    .onUpdate((event) => {
+      'worklet';
+      translateX.value = savedTranslateX.value + event.translationX;
+      translateY.value = savedTranslateY.value + event.translationY;
+    })
+    .onEnd(() => {
+      'worklet';
+      runOnJS(setIsDragging)(false);
+      
+      // Update manual offset in JS thread for state persistence
+      const newOffsetX = translateX.value;
+      const newOffsetY = translateY.value;
+      
+      runOnJS(setManualOffset)({ x: newOffsetX, y: newOffsetY });
+      runOnJS(logDragRelease)(newOffsetX, newOffsetY);
+    });
 
   // Listen to keyboard events
   useEffect(() => {
@@ -156,8 +155,10 @@ export function AnnotationPopover({
     setSelectedTags([]);
     setShowAudioRecorder(false);
     setManualOffset({ x: 0, y: 0 });
-    panX.setValue(0);
-    panY.setValue(0);
+    translateX.value = 0;
+    translateY.value = 0;
+    savedTranslateX.value = 0;
+    savedTranslateY.value = 0;
     hasInitialPosition.current = false; // ⭐ CRITICAL: Reset position flag too!
     isFirstOpen.current = true;
     lastEditingAnnotationId.current = null;
@@ -178,8 +179,10 @@ export function AnnotationPopover({
     if (isFirstOpen.current) {
       console.log('🔄 [Popover] First open - resetting manual offset');
       setManualOffset({ x: 0, y: 0 });
-      panX.setValue(0);
-      panY.setValue(0);
+      translateX.value = 0;
+      translateY.value = 0;
+      savedTranslateX.value = 0;
+      savedTranslateY.value = 0;
       isFirstOpen.current = false;
     }
     
@@ -229,15 +232,16 @@ export function AnnotationPopover({
 
   useEffect(() => {
     if (visible) {
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 200,
-        useNativeDriver: true,
-      }).start();
+      opacity.value = withTiming(1, { duration: 200 });
+      scale.value = withSpring(1, { 
+        damping: 15,
+        stiffness: 150,
+      });
     } else {
-      fadeAnim.setValue(0);
+      opacity.value = 0;
+      scale.value = 0.9;
     }
-  }, [visible, fadeAnim]);
+  }, [visible]);
 
   // Calculate dynamic height based on mode
   const getPopoverHeight = () => {
@@ -364,8 +368,10 @@ export function AnnotationPopover({
       // Reset when popover closes
       hasInitialPosition.current = false;
       setManualOffset({ x: 0, y: 0 });
-      panX.setValue(0);
-      panY.setValue(0);
+      translateX.value = 0;
+      translateY.value = 0;
+      savedTranslateX.value = 0;
+      savedTranslateY.value = 0;
     }
   }, [position, visible, keyboardHeight]); // Removed manualOffset from dependencies!
 
@@ -406,6 +412,18 @@ export function AnnotationPopover({
     }
   };
 
+  // Animated styles using useAnimatedStyle for better performance
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      transform: [
+        { translateX: translateX.value },
+        { translateY: translateY.value },
+        { scale: scale.value },
+      ],
+    };
+  });
+
   if (!visible || !position) return null;
 
   return (
@@ -420,28 +438,16 @@ export function AnnotationPopover({
           {
             left: layout.x,
             top: layout.y,
-            opacity: fadeAnim,
-            transform: [
-              {
-                translateX: panX,
-              },
-              {
-                translateY: panY,
-              },
-              {
-                scale: fadeAnim.interpolate({
-                  inputRange: [0, 1],
-                  outputRange: [0.9, 1],
-                }),
-              },
-            ],
           },
+          animatedStyle,
         ]}
       >
-        {/* Drag Handle */}
-        <View style={styles.dragHandleContainer} {...panResponder.panHandlers}>
-          <View style={styles.dragHandle} />
-        </View>
+        {/* Drag Handle with Gesture Detector */}
+        <GestureDetector gesture={panGesture}>
+          <View style={styles.dragHandleContainer}>
+            <View style={styles.dragHandle} />
+          </View>
+        </GestureDetector>
 
         {/* Arrow */}
         <View 

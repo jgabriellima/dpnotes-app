@@ -45,6 +45,10 @@
             "DEFAULT"
           ]
         }
+      ],
+      "permissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.MODIFY_AUDIO_SETTINGS"
       ]
     },
     "web": {
@@ -60,6 +64,12 @@
       ],
       "expo-asset",
       "expo-web-browser"
-    ]
+    ],
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "c94ad2aa-f9de-48bd-9e33-ca784975d94e"
+      }
+    }
   }
 }

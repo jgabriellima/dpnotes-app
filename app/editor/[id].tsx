@@ -22,7 +22,6 @@ import { useDocumentsStore } from '../../src/stores/documentsStore';
 import { useTagsStore } from '../../src/stores/tagsStore';
 import { useSettingsStore } from '../../src/stores/settingsStore';
 import { importFromClipboard } from '../../src/services/clipboard/import';
-import { generatePrompt } from '../../src/services/export/promptGenerator';
 import type { Annotation } from '../../src/types/editor.types';
 
 function EditorScreenContent() {
@@ -103,65 +102,72 @@ function EditorScreenContent() {
   // Get current document
   const document = getDocument(documentId);
 
-  // Insert annotation markers into text at exact positions
-  const insertAnnotationMarkers = (text: string, annotations: Annotation[]) => {
-    // Parse text into words
-    const words = text.split(/\s+/);
+  // Insert annotations inline directly after each annotated text
+  const insertAnnotationsInline = (text: string, annotations: Annotation[]) => {
+    // Create a map of wordId to annotation object
+    const wordIdToAnnotation = new Map<string, Annotation>();
     
-    // Create a map of word positions to annotation indices
-    const wordToAnnotation = new Map<number, number>();
-    
-    annotations.forEach((annotation, annotationIndex) => {
+    annotations.forEach((annotation) => {
       if (annotation.wordIds && annotation.wordIds.length > 0) {
-        // Get the last word ID to place the marker after it
+        // Mark the last word ID of each annotation
         const lastWordId = annotation.wordIds[annotation.wordIds.length - 1];
-        const wordIndex = parseInt(lastWordId.split('-w')[1]);
-        wordToAnnotation.set(wordIndex, annotationIndex);
+        wordIdToAnnotation.set(lastWordId, annotation);
       }
     });
     
-    // Reconstruct text with markers
-    let result = '';
-    words.forEach((word, index) => {
-      result += word;
-      
-      // Add marker if this word is annotated
-      if (wordToAnnotation.has(index)) {
-        const annotationIndex = wordToAnnotation.get(index)!;
-        result += ` **[T${annotationIndex + 1}]**`;
+    // Process text paragraph by paragraph (same structure as wordId generation)
+    const paragraphs = text.split(/\n\n+/);
+    const resultParagraphs: string[] = [];
+    
+    paragraphs.forEach((para, paraIndex) => {
+      if (!para.trim()) {
+        resultParagraphs.push(para);
+        return;
       }
       
-      // Add space (except for last word)
-      if (index < words.length - 1) {
-        result += ' ';
+      const words = para.split(/(\s+)/); // Keep whitespace
+      let paraResult = '';
+      let wordIndex = 0;
+      
+      for (let i = 0; i < words.length; i++) {
+        const word = words[i];
+        
+        // Add the word/whitespace as-is
+        paraResult += word;
+        
+        // Skip pure whitespace for wordId tracking
+        if (/^\s+$/.test(word)) {
+          continue;
+        }
+        
+        // Check if this word has an annotation
+        const wordId = `p${paraIndex}-w${wordIndex}`;
+        if (wordIdToAnnotation.has(wordId)) {
+          const annotation = wordIdToAnnotation.get(wordId)!;
+          
+          // Build inline annotation based on type
+          let inlineAnnotation = '';
+          
+          if (annotation.type === 'text' && annotation.textNote) {
+            inlineAnnotation = ` **[Note: ${annotation.textNote}]**`;
+          } else if (annotation.type === 'tags' && annotation.tags && annotation.tags.length > 0) {
+            const tagsList = annotation.tags.map(t => t.label).join(', ');
+            inlineAnnotation = ` **[Tags: ${tagsList}]**`;
+          } else if (annotation.type === 'audio' && annotation.transcription) {
+            inlineAnnotation = ` **[Audio: ${annotation.transcription}]**`;
+          }
+          
+          paraResult += inlineAnnotation;
+        }
+        
+        wordIndex++;
       }
+      
+      resultParagraphs.push(paraResult);
     });
     
-    return result;
-  };
-
-  // Transform annotations to the format expected by generatePrompt
-  const transformAnnotations = (annotations: Annotation[]) => {
-    return annotations.map((annotation, index) => {
-      const sentenceText = annotation.wordIds?.length > 0
-        ? `[Seleção: ${annotation.wordIds.join(', ')}]`
-        : '[Texto selecionado]';
-      
-      return {
-        id: annotation.id,
-        sentenceIndex: index,
-        sentenceText,
-        textNote: annotation.textNote || null,
-        labels: annotation.tags?.map(tag => ({
-          id: tag.label, // Use label as id since Tag type doesn't have id
-          name: tag.label,
-          description: tag.description || null,
-        })) || [],
-        audio: annotation.audioUri ? [{
-          transcription: annotation.transcription || null,
-        }] : [],
-      };
-    });
+    // Rejoin paragraphs with double newlines
+    return resultParagraphs.join('\n\n');
   };
 
   const handleCopyToClipboard = async () => {
@@ -188,62 +194,24 @@ function EditorScreenContent() {
         return;
       }
 
-      // Transforma e gera prompt com anotações
-      const transformedAnnotations = transformAnnotations(annotations);
-      
       console.log('📋 [Editor] Copying with annotations:', {
-        annotationsCount: transformedAnnotations.length,
+        annotationsCount: annotations.length,
         hasContent: !!content,
       });
 
-      // Generate custom prompt with exact marker positions
+      // Generate custom prompt with inline annotations
       const sections: string[] = [];
       
-      // Header
-      sections.push('Por favor, processe o texto abaixo considerando as anotações fornecidas.');
+      // Header with format explanation
+      sections.push('Instruction: This text contains inline annotations. Each annotation appears immediately after the annotated text in the following formats:');
+      sections.push('- Text notes: **[Note: your note here]**');
+      sections.push('- Tags: **[Tags: tag1, tag2]**');
+      sections.push('- Audio transcriptions: **[Audio: transcription here]**');
       sections.push('');
       
-      // Summary of Annotations
-      sections.push('## Sumário das Anotações');
-      sections.push('');
-      
-      transformedAnnotations.forEach((annotation, index) => {
-        const refId = `T${index + 1}`;
-        sections.push(`**[${refId}]**`);
-        
-        // Labels
-        if (annotation.labels.length > 0) {
-          annotation.labels.forEach(label => {
-            sections.push(`- Label: **${label.name}**`);
-            if (label.description) {
-              sections.push(`  ${label.description}`);
-            }
-          });
-        }
-        
-        // Text Note
-        if (annotation.textNote) {
-          sections.push(`- Nota: ${annotation.textNote}`);
-        }
-        
-        // Audio Transcription
-        if (annotation.audio.length > 0) {
-          annotation.audio.forEach(audio => {
-            if (audio.transcription) {
-              sections.push(`- Transcrição de áudio: "${audio.transcription}"`);
-            }
-          });
-        }
-        
-        sections.push('');
-      });
-      
-      // Annotated Text with markers at exact positions
-      sections.push('## Texto Anotado');
-      sections.push('');
-      sections.push('**Documento**');
-      sections.push('');
-      sections.push(insertAnnotationMarkers(content, annotations));
+      // Annotated Text with inline annotations
+      sections.push('[Annotated Text]');
+      sections.push(insertAnnotationsInline(content, annotations));
       
       const prompt = sections.join('\n');
 

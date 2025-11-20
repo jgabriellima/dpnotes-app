@@ -25,11 +25,18 @@ export interface Annotation {
   createdAt: Date;
 }
 
+export interface Project {
+  id: string;
+  name: string;
+  createdAt: string;
+}
+
 export interface EditorDocument {
   id: string;
   content: string;
   annotations: Annotation[];
   title?: string;
+  projectId?: string;
   createdAt: string;
   updatedAt: string;
 }

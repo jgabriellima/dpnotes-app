@@ -26,6 +26,7 @@ const iconMap: Record<string, keyof typeof LucideIcons> = {
   
   // Projects & Documents
   'folder': 'Folder',
+  'create_new_folder': 'FolderPlus',
   'edit_square': 'FileEdit',
   'post_add': 'FilePlus',
   'content_paste_go': 'ClipboardPaste',
