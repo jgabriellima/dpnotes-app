@@ -5,9 +5,10 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import { View, Text, Pressable, StyleSheet, useColorScheme } from 'react-native';
 import { Audio } from 'expo-av';
 import { Icon } from '../ui/Icon';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 interface AudioPlayerProps {
   audioUri: string;
@@ -22,6 +23,29 @@ export function AudioPlayer({
   onDelete,
   onReRecord,
 }: AudioPlayerProps) {
+  const { settings } = useSettingsStore();
+  const systemColorScheme = useColorScheme();
+  
+  // Determine effective theme
+  const isDark = settings.theme === 'dark' || (settings.theme === 'light' ? false : systemColorScheme === 'dark');
+  
+  const theme = {
+    transcriptionBg: isDark ? '#2a2a2a' : '#f9fafb',
+    transcriptionBorder: isDark ? '#3a3a3a' : '#e5e7eb',
+    transcriptionLabel: isDark ? '#a0a0a0' : '#6b7280',
+    transcriptionText: isDark ? '#e5e7eb' : '#374151',
+    playButtonBg: isDark ? '#2a2a2a' : '#f3f4f6',
+    progressBg: isDark ? '#3a3a3a' : '#e5e7eb',
+    progressFill: '#8b5cf6',
+    timeText: isDark ? '#a0a0a0' : '#6b7280',
+    deleteButtonBg: isDark ? '#7f1d1d' : '#fef2f2',
+    deleteButtonBorder: isDark ? '#991b1b' : '#fecaca',
+    deleteButtonText: '#ef4444',
+    reRecordButtonBg: isDark ? '#5b21b6' : '#f5f3ff',
+    reRecordButtonBorder: isDark ? '#6d28d9' : '#ddd6fe',
+    reRecordButtonText: isDark ? '#c4b5fd' : '#8b5cf6',
+  };
+  
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [duration, setDuration] = useState<number>(0);
@@ -109,9 +133,12 @@ export function AudioPlayer({
     <View style={styles.container}>
       {/* Transcription Preview */}
       {transcription && (
-        <View style={styles.transcriptionBox}>
-          <Text style={styles.transcriptionLabel}>Transcrição:</Text>
-          <Text style={styles.transcriptionText} numberOfLines={2}>
+        <View style={[styles.transcriptionBox, { 
+          backgroundColor: theme.transcriptionBg,
+          borderColor: theme.transcriptionBorder,
+        }]}>
+          <Text style={[styles.transcriptionLabel, { color: theme.transcriptionLabel }]}>Transcrição:</Text>
+          <Text style={[styles.transcriptionText, { color: theme.transcriptionText }]} numberOfLines={2}>
             {transcription}
           </Text>
         </View>
@@ -120,23 +147,23 @@ export function AudioPlayer({
       {/* Player Controls */}
       <View style={styles.playerContainer}>
         <Pressable 
-          style={styles.playButton} 
+          style={[styles.playButton, { backgroundColor: theme.playButtonBg }]} 
           onPress={handlePlayPause}
         >
           <Icon 
             name={isPlaying ? 'pause' : 'play_arrow'} 
             size={24} 
-            color="#8b5cf6" 
+            color={theme.progressFill} 
           />
         </Pressable>
 
         <View style={styles.progressContainer}>
-          <View style={styles.progressBar}>
-            <View style={[styles.progressFill, { width: `${progress}%` }]} />
+          <View style={[styles.progressBar, { backgroundColor: theme.progressBg }]}>
+            <View style={[styles.progressFill, { backgroundColor: theme.progressFill, width: `${progress}%` }]} />
           </View>
           <View style={styles.timeContainer}>
-            <Text style={styles.timeText}>{formatTime(position)}</Text>
-            <Text style={styles.timeText}>{formatTime(duration)}</Text>
+            <Text style={[styles.timeText, { color: theme.timeText }]}>{formatTime(position)}</Text>
+            <Text style={[styles.timeText, { color: theme.timeText }]}>{formatTime(duration)}</Text>
           </View>
         </View>
       </View>
@@ -144,16 +171,22 @@ export function AudioPlayer({
       {/* Action Buttons */}
       <View style={styles.actionButtons}>
         {onDelete && (
-          <Pressable style={styles.deleteButton} onPress={onDelete}>
-            <Icon name="delete" size={20} color="#ef4444" />
-            <Text style={styles.deleteButtonText}>Deletar</Text>
+          <Pressable style={[styles.deleteButton, {
+            backgroundColor: theme.deleteButtonBg,
+            borderColor: theme.deleteButtonBorder,
+          }]} onPress={onDelete}>
+            <Icon name="delete" size={20} color={theme.deleteButtonText} />
+            <Text style={[styles.deleteButtonText, { color: theme.deleteButtonText }]}>Deletar</Text>
           </Pressable>
         )}
         
         {onReRecord && (
-          <Pressable style={styles.reRecordButton} onPress={onReRecord}>
-            <Icon name="mic" size={20} color="#8b5cf6" />
-            <Text style={styles.reRecordButtonText}>Re-gravar</Text>
+          <Pressable style={[styles.reRecordButton, {
+            backgroundColor: theme.reRecordButtonBg,
+            borderColor: theme.reRecordButtonBorder,
+          }]} onPress={onReRecord}>
+            <Icon name="mic" size={20} color={theme.reRecordButtonText} />
+            <Text style={[styles.reRecordButtonText, { color: theme.reRecordButtonText }]}>Re-gravar</Text>
           </Pressable>
         )}
       </View>
@@ -166,22 +199,18 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   transcriptionBox: {
-    backgroundColor: '#f9fafb',
     padding: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   transcriptionLabel: {
     fontSize: 11,
     fontWeight: '600',
-    color: '#6b7280',
     marginBottom: 4,
     textTransform: 'uppercase',
   },
   transcriptionText: {
     fontSize: 13,
-    color: '#374151',
     lineHeight: 18,
   },
   playerContainer: {
@@ -193,7 +222,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -203,13 +231,11 @@ const styles = StyleSheet.create({
   },
   progressBar: {
     height: 4,
-    backgroundColor: '#e5e7eb',
     borderRadius: 2,
     overflow: 'hidden',
   },
   progressFill: {
     height: '100%',
-    backgroundColor: '#8b5cf6',
     borderRadius: 2,
   },
   timeContainer: {
@@ -218,7 +244,6 @@ const styles = StyleSheet.create({
   },
   timeText: {
     fontSize: 11,
-    color: '#6b7280',
     fontWeight: '500',
   },
   actionButtons: {
@@ -235,14 +260,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#fef2f2',
     borderWidth: 1,
-    borderColor: '#fecaca',
   },
   deleteButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#ef4444',
   },
   reRecordButton: {
     flex: 1,
@@ -253,14 +275,11 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#f5f3ff',
     borderWidth: 1,
-    borderColor: '#ddd6fe',
   },
   reRecordButtonText: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#8b5cf6',
   },
 });
 

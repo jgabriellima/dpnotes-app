@@ -9,7 +9,8 @@ export const buildHtmlFromMarkdown = (
   fontSize: number = 17,
   scrollPosition: 'left' | 'right' = 'left',
   theme: 'light' | 'dark' = 'light',
-  highContrast: boolean = false
+  highContrast: boolean = false,
+  scrollAreaWidth: number = 48
 ) => `
 <!DOCTYPE html>
 <html>
@@ -29,12 +30,12 @@ export const buildHtmlFromMarkdown = (
       }
       
       body {
-        padding: ${scrollPosition === 'left' ? '16px 16px 16px 48px' : '16px 48px 16px 16px'}; /* Extra padding for safe scroll area */
+        padding: ${scrollPosition === 'left' ? `16px 16px 16px ${scrollAreaWidth + 8}px` : `16px ${scrollAreaWidth + 8}px 16px 16px`}; /* Extra padding for safe scroll area */
         margin: 0;
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
         line-height: 1.6;
         color: ${theme === 'dark' ? '#e5e7eb' : '#1f2937'};
-        background-color: ${theme === 'dark' ? '#1f2937' : '#ffffff'};
+        background-color: ${theme === 'dark' ? '#1a1a1a' : '#ffffff'};
         font-size: ${fontSize}px;
       }
       

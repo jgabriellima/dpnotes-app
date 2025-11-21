@@ -1,15 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  Modal,
   Pressable,
   StyleSheet,
   ScrollView,
   TextInput,
   Alert,
   useColorScheme,
+  Dimensions,
+  Modal,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { Drawer } from 'react-native-drawer-layout';
 import { Icon } from '../ui/Icon';
 import { useDocumentsStore } from '../../stores/documentsStore';
 import { useSettingsStore } from '../../stores/settingsStore';
@@ -17,14 +20,18 @@ import { router } from 'expo-router';
 import Constants from 'expo-constants';
 import type { EditorDocument, Project } from '../../types/editor.types';
 
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const DRAWER_WIDTH = Math.min(SCREEN_WIDTH * 0.85, 400);
+
 interface NotesMenuProps {
   visible: boolean;
   currentDocumentId?: string;
   onClose: () => void;
   onCreateNew: () => void;
+  children: React.ReactNode;
 }
 
-export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew }: NotesMenuProps) {
+export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew, children }: NotesMenuProps) {
   const { documents, projects, deleteDocument, moveDocumentToProject, createProject, deleteProject } = useDocumentsStore();
   const { settings, updateTheme } = useSettingsStore();
   const systemColorScheme = useColorScheme();
@@ -32,6 +39,8 @@ export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew }: 
   const [newProjectName, setNewProjectName] = useState('');
   const [selectedNoteMenu, setSelectedNoteMenu] = useState<string | null>(null);
   const [selectedProjectMenu, setSelectedProjectMenu] = useState<string | null>(null);
+  const [showMoveToProjectModal, setShowMoveToProjectModal] = useState(false);
+  const [noteToMove, setNoteToMove] = useState<string | null>(null);
   
   // Determine effective theme
   const isDark = settings.theme === 'dark' || (settings.theme === 'light' ? false : systemColorScheme === 'dark');
@@ -100,6 +109,20 @@ export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew }: 
         },
       ]
     );
+  };
+
+  const handleMoveToProject = (projectId?: string) => {
+    if (noteToMove) {
+      moveDocumentToProject(noteToMove, projectId);
+      setShowMoveToProjectModal(false);
+      setNoteToMove(null);
+    }
+  };
+
+  const openMoveToProjectModal = (noteId: string) => {
+    setNoteToMove(noteId);
+    setSelectedNoteMenu(null);
+    setShowMoveToProjectModal(true);
   };
 
   const formatDate = (timestamp: string) => {
@@ -195,22 +218,7 @@ export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew }: 
           <View style={[styles.contextMenu, { backgroundColor: theme.secondaryBg, borderColor: theme.border }]}>
             <Pressable
               style={styles.contextMenuItem}
-              onPress={() => {
-                setSelectedNoteMenu(null);
-                // Show project selection
-                Alert.alert(
-                  'Mover para Projeto',
-                  'Selecione um projeto',
-                  [
-                    { text: 'Sem projeto', onPress: () => moveDocumentToProject(item.id, undefined) },
-                    ...sortedProjects.map(proj => ({
-                      text: proj.name,
-                      onPress: () => moveDocumentToProject(item.id, proj.id),
-                    })),
-                    { text: 'Cancelar', style: 'cancel' },
-                  ]
-                );
-              }}
+              onPress={() => openMoveToProjectModal(item.id)}
             >
               <Icon name="folder" size={18} color={theme.text} />
               <Text style={[styles.contextMenuText, { color: theme.text }]}>Mover para projeto</Text>
@@ -275,26 +283,21 @@ export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew }: 
 
   const appVersion = Constants.expoConfig?.version || '1.0.0';
 
-  return (
-    <Modal
-      visible={visible}
-      animationType="slide"
-      presentationStyle="pageSheet"
-      onRequestClose={onClose}
-    >
-      <View style={[styles.container, { backgroundColor: theme.background }]}>
-        {/* Header */}
-        <View style={[styles.header, { borderBottomColor: theme.border }]}>
-          <View style={styles.headerLeft}>
-            <View style={styles.logoIcon}>
-              <Icon name="description" size={24} color={theme.accent} />
-            </View>
-            <Text style={[styles.headerTitle, { color: theme.text }]}>Notas</Text>
+  // Render drawer content
+  const renderDrawerContent = () => (
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.background }]} edges={['top', 'bottom']}>
+      {/* Header */}
+      <View style={[styles.header, { borderBottomColor: theme.border }]}>
+        <View style={styles.headerLeft}>
+          <View style={styles.logoIcon}>
+            <Icon name="description" size={24} color={theme.accent} />
           </View>
-          <Pressable onPress={onClose} style={styles.closeButton}>
-            <Icon name="close" size={22} color={theme.text} />
-          </Pressable>
+          <Text style={[styles.headerTitle, { color: theme.text }]}>Notas</Text>
         </View>
+        <Pressable onPress={onClose} style={styles.closeButton}>
+          <Icon name="close" size={22} color={theme.text} />
+        </Pressable>
+      </View>
 
         {/* Main Content */}
         <ScrollView style={styles.scrollContent} contentContainerStyle={styles.scrollContentContainer}>
@@ -366,28 +369,119 @@ export function NotesMenu({ visible, currentDocumentId, onClose, onCreateNew }: 
           )}
         </ScrollView>
 
-        {/* Footer */}
-        <View style={[styles.footer, { borderTopColor: theme.border }]}>
-          <View style={styles.footerLeft}>
-            <Text style={[styles.footerVersion, { color: theme.textSecondary }]}>v{appVersion}</Text>
-            <Text style={[styles.footerCredit, { color: theme.textSecondary }]}>
-              Made by João Gabriel Lima
-            </Text>
-          </View>
-          
-          <Pressable style={styles.themeToggle} onPress={toggleTheme}>
-            <Icon 
-              name={isDark ? 'light_mode' : 'dark_mode'} 
-              size={18} 
-              color={theme.textSecondary} 
-            />
-            <Text style={[styles.themeToggleText, { color: theme.textSecondary }]}>
-              {isDark ? 'Light' : 'Dark'}
-            </Text>
-          </Pressable>
+      {/* Footer */}
+      <View style={[styles.footer, { borderTopColor: theme.border }]}>
+        <View style={styles.footerLeft}>
+          <Text style={[styles.footerVersion, { color: theme.textSecondary }]}>v{appVersion}</Text>
+          <Text style={[styles.footerCredit, { color: theme.textSecondary }]}>
+            Made by João Gabriel Lima
+          </Text>
         </View>
+        
+        <Pressable style={styles.themeToggle} onPress={toggleTheme}>
+          <Icon 
+            name={isDark ? 'light_mode' : 'dark_mode'} 
+            size={18} 
+            color={theme.textSecondary} 
+          />
+          <Text style={[styles.themeToggleText, { color: theme.textSecondary }]}>
+            {isDark ? 'Light' : 'Dark'}
+          </Text>
+        </Pressable>
       </View>
-    </Modal>
+    </SafeAreaView>
+  );
+
+  return (
+    <>
+      <Drawer
+        open={visible}
+        onOpen={() => {}}
+        onClose={onClose}
+        renderDrawerContent={renderDrawerContent}
+        drawerPosition="left"
+        drawerType="front"
+        swipeEnabled={true}
+        swipeEdgeWidth={20}
+        drawerStyle={{
+          width: DRAWER_WIDTH,
+          backgroundColor: theme.background,
+        }}
+        overlayStyle={{
+          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        }}
+      >
+        {children}
+      </Drawer>
+
+      {/* Move to Project Modal */}
+      <Modal
+        visible={showMoveToProjectModal}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setShowMoveToProjectModal(false)}
+      >
+        <Pressable 
+          style={styles.modalOverlay}
+          onPress={() => setShowMoveToProjectModal(false)}
+        >
+          <View 
+            style={[styles.modalContent, { backgroundColor: theme.background }]}
+            onStartShouldSetResponder={() => true}
+          >
+            <View style={[styles.modalHeader, { borderBottomColor: theme.border }]}>
+              <Text style={[styles.modalTitle, { color: theme.text }]}>Mover para Projeto</Text>
+              <Text style={[styles.modalSubtitle, { color: theme.textSecondary }]}>
+                Selecione um projeto
+              </Text>
+            </View>
+
+            <ScrollView 
+              style={styles.modalScrollView}
+              contentContainerStyle={styles.modalScrollContent}
+            >
+              {/* Sem Projeto Option */}
+              <Pressable
+                style={[styles.projectOption, { borderBottomColor: theme.border }]}
+                onPress={() => handleMoveToProject(undefined)}
+              >
+                <Icon name="folder_off" size={20} color={theme.textSecondary} />
+                <Text style={[styles.projectOptionText, { color: theme.text }]}>
+                  SEM PROJETO
+                </Text>
+              </Pressable>
+
+              {/* Project Options */}
+              {sortedProjects.map((project, index) => (
+                <Pressable
+                  key={project.id}
+                  style={[
+                    styles.projectOption,
+                    { borderBottomColor: theme.border },
+                    index === sortedProjects.length - 1 && styles.projectOptionLast
+                  ]}
+                  onPress={() => handleMoveToProject(project.id)}
+                >
+                  <Icon name="folder" size={20} color={theme.accent} />
+                  <Text style={[styles.projectOptionText, { color: theme.text }]}>
+                    {project.name}
+                  </Text>
+                </Pressable>
+              ))}
+            </ScrollView>
+
+            <View style={[styles.modalFooter, { borderTopColor: theme.border }]}>
+              <Pressable
+                style={[styles.modalCancelButton, { backgroundColor: theme.secondaryBg }]}
+                onPress={() => setShowMoveToProjectModal(false)}
+              >
+                <Text style={[styles.modalCancelText, { color: theme.text }]}>Cancelar</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
+    </>
   );
 }
 
@@ -605,5 +699,74 @@ const styles = StyleSheet.create({
   themeToggleText: {
     fontSize: 13,
     fontWeight: '500',
+  },
+  // Modal Styles
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modalContent: {
+    width: '100%',
+    maxWidth: 400,
+    maxHeight: '70%',
+    borderRadius: 16,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 8,
+  },
+  modalHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  modalSubtitle: {
+    fontSize: 14,
+  },
+  modalScrollView: {
+    maxHeight: 300,
+  },
+  modalScrollContent: {
+    paddingVertical: 8,
+  },
+  projectOption: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    paddingHorizontal: 20,
+    paddingVertical: 14,
+    borderBottomWidth: 1,
+  },
+  projectOptionLast: {
+    borderBottomWidth: 0,
+  },
+  projectOptionText: {
+    fontSize: 15,
+    fontWeight: '500',
+  },
+  modalFooter: {
+    paddingHorizontal: 20,
+    paddingVertical: 16,
+    borderTopWidth: 1,
+  },
+  modalCancelButton: {
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
   },
 });

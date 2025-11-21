@@ -18,6 +18,7 @@ export interface AppSettings {
   fontSize: FontSize;
   theme: Theme;
   highContrast: boolean;
+  scrollAreaWidth: number; // Width in pixels (32-64)
 }
 
 interface SettingsState {
@@ -30,6 +31,7 @@ interface SettingsState {
   updateFontSize: (size: FontSize) => Promise<void>;
   updateTheme: (theme: Theme) => Promise<void>;
   updateHighContrast: (enabled: boolean) => Promise<void>;
+  updateScrollAreaWidth: (width: number) => Promise<void>;
   updateSettings: (updates: Partial<AppSettings>) => Promise<void>;
 }
 
@@ -39,6 +41,7 @@ const DEFAULT_SETTINGS: AppSettings = {
   fontSize: 'medium',
   theme: 'light',
   highContrast: false,
+  scrollAreaWidth: 48, // Default 48px
 };
 
 export const useSettingsStore = create<SettingsState>((set, get) => ({
@@ -92,6 +95,14 @@ export const useSettingsStore = create<SettingsState>((set, get) => ({
     set({ settings: updated });
     await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
     console.log('⚙️ [Settings] Updated high contrast:', enabled);
+  },
+
+  updateScrollAreaWidth: async (width: number) => {
+    const { settings } = get();
+    const updated = { ...settings, scrollAreaWidth: width };
+    set({ settings: updated });
+    await AsyncStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(updated));
+    console.log('⚙️ [Settings] Updated scroll area width:', width);
   },
 
   updateSettings: async (updates: Partial<AppSettings>) => {

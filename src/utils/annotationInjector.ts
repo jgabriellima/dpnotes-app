@@ -5,8 +5,8 @@
 
 import type { Annotation } from '../types/editor.types';
 
-// Annotation type colors and icons
-const ANNOTATION_STYLES = {
+// Annotation type colors and icons - Light Mode
+const ANNOTATION_STYLES_LIGHT = {
   text: {
     color: '#FEF3C7', // Yellow
     borderColor: '#F59E0B',
@@ -24,12 +24,39 @@ const ANNOTATION_STYLES = {
   },
 };
 
+// Annotation type colors and icons - Dark Mode (higher contrast)
+const ANNOTATION_STYLES_DARK = {
+  text: {
+    color: '#92400E', // Dark yellow/amber
+    borderColor: '#FBBF24',
+    icon: '📝',
+  },
+  audio: {
+    color: '#1E3A8A', // Dark blue
+    borderColor: '#60A5FA',
+    icon: '🎤',
+  },
+  tags: {
+    color: '#065F46', // Dark green
+    borderColor: '#34D399',
+    icon: '🏷️',
+  },
+};
+
+/**
+ * Get annotation styles based on theme
+ */
+function getAnnotationStylesByTheme(theme: 'light' | 'dark') {
+  return theme === 'dark' ? ANNOTATION_STYLES_DARK : ANNOTATION_STYLES_LIGHT;
+}
+
 /**
  * Convert plain text to HTML with annotation markers
  */
 export function injectAnnotationsIntoHtml(
   plainText: string,
-  annotations: Annotation[]
+  annotations: Annotation[],
+  theme: 'light' | 'dark' = 'light'
 ): string {
   if (!plainText || plainText.trim().length === 0) {
     return '<p>Sem conteúdo</p>';
@@ -37,6 +64,7 @@ export function injectAnnotationsIntoHtml(
 
   console.log('🎨 [annotationInjector] Processing annotations:', {
     total: annotations.length,
+    theme,
     annotations: annotations.map(a => ({
       id: a.id,
       type: a.type,
@@ -44,6 +72,9 @@ export function injectAnnotationsIntoHtml(
       preview: a.textNote?.substring(0, 30) || a.transcription?.substring(0, 30) || '[no text]',
     })),
   });
+
+  // Select appropriate styles based on theme
+  const annotationStyles = getAnnotationStylesByTheme(theme);
 
   // Sort annotations by their position (assuming wordIds are sequential)
   const sortedAnnotations = [...annotations].sort((a, b) => {
@@ -89,7 +120,7 @@ export function injectAnnotationsIntoHtml(
         const isLastWord =
           annotation.wordIds[annotation.wordIds.length - 1] === wordId;
 
-        const style = ANNOTATION_STYLES[annotation.type];
+        const style = annotationStyles[annotation.type];
 
         if (isFirstWord) {
           // Start annotation span

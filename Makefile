@@ -1,4 +1,4 @@
-.PHONY: help setup dev ios android web lint typecheck test quality build submit-ios submit-android status clean install deps check-env setup-supabase stt-provider
+.PHONY: help setup dev ios android web lint typecheck test quality build submit-ios submit-android build-android-preview status clean install deps check-env setup-supabase stt-provider
 
 # Colors for output
 BLUE := \033[0;34m
@@ -34,6 +34,7 @@ help: ## Show this help message
 	@echo ""
 	@echo "$(GREEN)Build & Deploy:$(NC)"
 	@echo "  make build         - Build production app"
+	@echo "  make build-android-preview - Build Android preview with EAS"
 	@echo "  make submit-ios   - Submit to App Store"
 	@echo "  make submit-android - Submit to Play Store"
 	@echo ""
@@ -135,6 +136,10 @@ submit-android: ## Submit Android app to Play Store
 	@echo "$(BLUE)Submitting Android app to Play Store...$(NC)"
 	$(EAS) submit --platform android
 
+build-android-preview: ## Build Android preview with EAS
+	@echo "$(BLUE)Building Android preview...$(NC)"
+	npx eas build --platform android --profile preview
+
 # Utilities
 status: ## Show project status
 	@echo "$(BLUE)Project Status$(NC)"
@@ -227,10 +232,11 @@ stt-provider: ## Switch STT provider (groq/local)
 # Splash Assets
 splash-assets: ## Generate splash screen assets from logo
 	@echo "$(BLUE)Generating splash screen assets...$(NC)"
-	@if [ ! -f "scripts/generate-splash-assets.sh" ]; then \
-		echo "$(RED)✗ Script not found: scripts/generate-splash-assets.sh$(NC)"; \
+	@if [ ! -f "scripts/generate-splash-final.sh" ]; then \
+		echo "$(RED)✗ Script not found: scripts/generate-splash-final.sh$(NC)"; \
 		exit 1; \
 	fi
-	@bash scripts/generate-splash-assets.sh
+	@chmod +x scripts/generate-splash-final.sh
+	@bash scripts/generate-splash-final.sh
 	@echo "$(GREEN)✓ Assets generated successfully!$(NC)"
 

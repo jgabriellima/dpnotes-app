@@ -6,7 +6,7 @@
  */
 
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, Pressable, StyleSheet, Dimensions, TextInput, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Dimensions, TextInput, KeyboardAvoidingView, Platform, Keyboard, useColorScheme } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, { 
@@ -20,6 +20,7 @@ import { Icon } from '../ui/Icon';
 import { AudioRecorder } from '../audio/AudioRecorder';
 import { AudioPlayer } from '../audio/AudioPlayer';
 import { useTagsStore } from '../../stores/tagsStore';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 const POPOVER_WIDTH = 280;
@@ -68,6 +69,33 @@ export function AnnotationPopover({
 }: AnnotationPopoverProps) {
   const router = useRouter();
   const { tags } = useTagsStore();
+  const { settings } = useSettingsStore();
+  const systemColorScheme = useColorScheme();
+  
+  // Determine effective theme
+  const isDark = settings.theme === 'dark' || (settings.theme === 'light' ? false : systemColorScheme === 'dark');
+  
+  const theme = {
+    background: isDark ? '#1a1a1a' : '#ffffff',
+    secondaryBg: isDark ? '#2a2a2a' : '#f5f5f5',
+    tertiaryBg: isDark ? '#3a3a3a' : '#f9fafb',
+    text: isDark ? '#ffffff' : '#1f2937',
+    textSecondary: isDark ? '#a0a0a0' : '#6b7280',
+    textTertiary: isDark ? '#707070' : '#9ca3af',
+    border: isDark ? '#3a3a3a' : '#e5e7eb',
+    inputBg: isDark ? '#2a2a2a' : '#ffffff',
+    inputBorder: isDark ? '#3a3a3a' : '#e5e7eb',
+    dragHandle: isDark ? '#4a4a4a' : '#d1d5db',
+    // Icon backgrounds
+    textIconBg: isDark ? '#ff6b5230' : '#FFE6E1',
+    audioIconBg: isDark ? '#8b5cf630' : '#EDE9FE',
+    tagsIconBg: isDark ? '#eab30830' : '#FEF3C7',
+    // Accent colors (keep vibrant)
+    accent: '#8b5cf6',
+    accentLight: isDark ? '#8b5cf620' : '#ede9fe',
+    error: '#ef4444',
+    errorBg: isDark ? '#7f1d1d' : '#fee2e2',
+  };
   
   const [mode, setMode] = useState<PopoverMode>('options');
   const [layout, setLayout] = useState({ x: 0, y: 0, showArrowTop: false });
@@ -438,6 +466,7 @@ export function AnnotationPopover({
           {
             left: layout.x,
             top: layout.y,
+            backgroundColor: theme.background,
           },
           animatedStyle,
         ]}
@@ -445,7 +474,7 @@ export function AnnotationPopover({
         {/* Drag Handle with Gesture Detector */}
         <GestureDetector gesture={panGesture}>
           <View style={styles.dragHandleContainer}>
-            <View style={styles.dragHandle} />
+            <View style={[styles.dragHandle, { backgroundColor: theme.dragHandle }]} />
           </View>
         </GestureDetector>
 
@@ -453,7 +482,7 @@ export function AnnotationPopover({
         <View 
           style={[
             styles.arrow,
-            layout.showArrowTop ? styles.arrowTop : styles.arrowBottom,
+            layout.showArrowTop ? [styles.arrowTop, { borderBottomColor: theme.background }] : [styles.arrowBottom, { borderTopColor: theme.background }],
             { 
               left: Math.max(0, Math.min(position.x + (position.width || 0) / 2 - layout.x - ARROW_SIZE, POPOVER_WIDTH - ARROW_SIZE * 2))
             },
@@ -464,24 +493,24 @@ export function AnnotationPopover({
         {mode === 'options' && !isEditing && (
           <View style={styles.options}>
             <Pressable style={styles.option} onPress={() => setMode('text')}>
-              <View style={[styles.iconContainer, styles.textIcon]}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.textIconBg }]}>
                 <Icon name="edit" size={18} color="#ff6b52" />
               </View>
-              <Text style={styles.optionLabel}>Texto</Text>
+              <Text style={[styles.optionLabel, { color: theme.text }]}>Texto</Text>
             </Pressable>
 
             <Pressable style={styles.option} onPress={() => setMode('audio')}>
-              <View style={[styles.iconContainer, styles.audioIcon]}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.audioIconBg }]}>
                 <Icon name="mic" size={18} color="#8b5cf6" />
               </View>
-              <Text style={styles.optionLabel}>Áudio</Text>
+              <Text style={[styles.optionLabel, { color: theme.text }]}>Áudio</Text>
             </Pressable>
 
             <Pressable style={styles.option} onPress={() => setMode('tags')}>
-              <View style={[styles.iconContainer, styles.tagsIcon]}>
+              <View style={[styles.iconContainer, { backgroundColor: theme.tagsIconBg }]}>
                 <Icon name="sell" size={18} color="#eab308" />
               </View>
-              <Text style={styles.optionLabel}>Tags</Text>
+              <Text style={[styles.optionLabel, { color: theme.text }]}>Tags</Text>
             </Pressable>
           </View>
         )}
@@ -492,34 +521,39 @@ export function AnnotationPopover({
             {isEditing && (() => {
               const currentMode = mode as PopoverMode;
               return (
-              <View style={styles.typeTabs}>
+              <View style={[styles.typeTabs, { backgroundColor: theme.tertiaryBg }]}>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'text' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'text' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('text')}
                 >
-                  <Icon name="edit" size={16} color={currentMode === 'text' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'text' && styles.typeTabTextActive]}>Texto</Text>
+                  <Icon name="edit" size={16} color={currentMode === 'text' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'text' && [styles.typeTabTextActive, { color: theme.accent }]]}>Texto</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'audio' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'audio' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('audio')}
                 >
-                  <Icon name="mic" size={16} color={currentMode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
+                  <Icon name="mic" size={16} color={currentMode === 'audio' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'audio' && [styles.typeTabTextActive, { color: theme.accent }]]}>Áudio</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'tags' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'tags' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('tags')}
                 >
-                  <Icon name="sell" size={16} color={currentMode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
+                  <Icon name="sell" size={16} color={currentMode === 'tags' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'tags' && [styles.typeTabTextActive, { color: theme.accent }]]}>Tags</Text>
                 </Pressable>
               </View>
               );
             })()}
             <TextInput
-              style={styles.textInput}
+              style={[styles.textInput, { 
+                backgroundColor: theme.inputBg, 
+                borderColor: theme.inputBorder, 
+                color: theme.text 
+              }]}
               placeholder="Adicione sua nota..."
+              placeholderTextColor={theme.textSecondary}
               value={textInput}
               onChangeText={setTextInput}
               multiline
@@ -529,11 +563,11 @@ export function AnnotationPopover({
             <View style={styles.actionButtons}>
               {isEditing ? (
                 <>
-                  <Pressable style={styles.deleteButton} onPress={handleDelete}>
-                    <Icon name="delete" size={20} color="#ef4444" />
+                  <Pressable style={[styles.deleteButton, { backgroundColor: theme.errorBg }]} onPress={handleDelete}>
+                    <Icon name="delete" size={20} color={theme.error} />
                   </Pressable>
                   <Pressable 
-                    style={[styles.confirmButton, !textInput.trim() && styles.confirmButtonDisabled]} 
+                    style={[styles.confirmButton, { backgroundColor: theme.accent }, !textInput.trim() && [styles.confirmButtonDisabled, { backgroundColor: theme.border }]]} 
                     onPress={handleConfirmText}
                     disabled={!textInput.trim()}
                   >
@@ -543,11 +577,11 @@ export function AnnotationPopover({
                 </>
               ) : (
                 <>
-                  <Pressable style={styles.backButton} onPress={() => setMode('options')}>
-                    <Icon name="arrow_back" size={20} color="#6b7280" />
+                  <Pressable style={[styles.backButton, { backgroundColor: theme.secondaryBg }]} onPress={() => setMode('options')}>
+                    <Icon name="arrow_back" size={20} color={theme.textSecondary} />
                   </Pressable>
                   <Pressable 
-                    style={[styles.confirmButton, !textInput.trim() && styles.confirmButtonDisabled]} 
+                    style={[styles.confirmButton, { backgroundColor: theme.accent }, !textInput.trim() && [styles.confirmButtonDisabled, { backgroundColor: theme.border }]]} 
                     onPress={handleConfirmText}
                     disabled={!textInput.trim()}
                   >
@@ -566,27 +600,27 @@ export function AnnotationPopover({
             {isEditing && (() => {
               const currentMode = mode as PopoverMode;
               return (
-              <View style={styles.typeTabs}>
+              <View style={[styles.typeTabs, { backgroundColor: theme.tertiaryBg }]}>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'text' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'text' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('text')}
                 >
-                  <Icon name="edit" size={16} color={currentMode === 'text' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'text' && styles.typeTabTextActive]}>Texto</Text>
+                  <Icon name="edit" size={16} color={currentMode === 'text' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'text' && [styles.typeTabTextActive, { color: theme.accent }]]}>Texto</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'audio' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'audio' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('audio')}
                 >
-                  <Icon name="mic" size={16} color={currentMode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
+                  <Icon name="mic" size={16} color={currentMode === 'audio' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'audio' && [styles.typeTabTextActive, { color: theme.accent }]]}>Áudio</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'tags' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'tags' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('tags')}
                 >
-                  <Icon name="sell" size={16} color={currentMode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
+                  <Icon name="sell" size={16} color={currentMode === 'tags' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'tags' && [styles.typeTabTextActive, { color: theme.accent }]]}>Tags</Text>
                 </Pressable>
               </View>
               );
@@ -621,9 +655,9 @@ export function AnnotationPopover({
             
             {/* Show back button only when NOT editing and in recorder mode */}
             {!isEditing && (
-              <Pressable style={styles.backButtonSingle} onPress={() => setMode('options')}>
-                <Icon name="arrow_back" size={18} color="#6b7280" />
-                <Text style={styles.backButtonText}>Voltar</Text>
+              <Pressable style={[styles.backButtonSingle, { backgroundColor: theme.secondaryBg }]} onPress={() => setMode('options')}>
+                <Icon name="arrow_back" size={18} color={theme.textSecondary} />
+                <Text style={[styles.backButtonText, { color: theme.textSecondary }]}>Voltar</Text>
               </Pressable>
             )}
           </View>
@@ -635,27 +669,27 @@ export function AnnotationPopover({
             {isEditing && (() => {
               const currentMode = mode as PopoverMode;
               return (
-              <View style={styles.typeTabs}>
+              <View style={[styles.typeTabs, { backgroundColor: theme.tertiaryBg }]}>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'text' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'text' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('text')}
                 >
-                  <Icon name="edit" size={16} color={currentMode === 'text' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'text' && styles.typeTabTextActive]}>Texto</Text>
+                  <Icon name="edit" size={16} color={currentMode === 'text' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'text' && [styles.typeTabTextActive, { color: theme.accent }]]}>Texto</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'audio' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'audio' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('audio')}
                 >
-                  <Icon name="mic" size={16} color={currentMode === 'audio' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'audio' && styles.typeTabTextActive]}>Áudio</Text>
+                  <Icon name="mic" size={16} color={currentMode === 'audio' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'audio' && [styles.typeTabTextActive, { color: theme.accent }]]}>Áudio</Text>
                 </Pressable>
                 <Pressable 
-                  style={[styles.typeTab, currentMode === 'tags' && styles.typeTabActive]}
+                  style={[styles.typeTab, currentMode === 'tags' && [styles.typeTabActive, { backgroundColor: theme.background }]]}
                   onPress={() => setMode('tags')}
                 >
-                  <Icon name="sell" size={16} color={currentMode === 'tags' ? '#8b5cf6' : '#9ca3af'} />
-                  <Text style={[styles.typeTabText, currentMode === 'tags' && styles.typeTabTextActive]}>Tags</Text>
+                  <Icon name="sell" size={16} color={currentMode === 'tags' ? theme.accent : theme.textTertiary} />
+                  <Text style={[styles.typeTabText, { color: theme.textTertiary }, currentMode === 'tags' && [styles.typeTabTextActive, { color: theme.accent }]]}>Tags</Text>
                 </Pressable>
               </View>
               );
@@ -666,13 +700,21 @@ export function AnnotationPopover({
                   key={tag.label}
                   style={[
                     styles.tagChip,
-                    selectedTags.includes(tag.label) && styles.tagChipSelected,
+                    { 
+                      backgroundColor: theme.secondaryBg, 
+                      borderColor: theme.border 
+                    },
+                    selectedTags.includes(tag.label) && [styles.tagChipSelected, { 
+                      backgroundColor: theme.accentLight, 
+                      borderColor: theme.accent 
+                    }],
                   ]}
                   onPress={() => handleToggleTag(tag.label)}
                 >
                   <Text style={[
                     styles.tagChipText,
-                    selectedTags.includes(tag.label) && styles.tagChipTextSelected,
+                    { color: theme.textSecondary },
+                    selectedTags.includes(tag.label) && [styles.tagChipTextSelected, { color: theme.accent }],
                   ]}>
                     {tag.label}
                   </Text>
@@ -681,24 +723,27 @@ export function AnnotationPopover({
             </View>
             
             <Pressable 
-              style={styles.manageTagsButton}
+              style={[styles.manageTagsButton, { 
+                backgroundColor: theme.tertiaryBg, 
+                borderColor: theme.border 
+              }]}
               onPress={() => {
                 onClose();
                 router.push('/(tabs)/labels');
               }}
             >
-              <Icon name="settings" size={16} color="#8b5cf6" />
-              <Text style={styles.manageTagsText}>Gerenciar Tags</Text>
+              <Icon name="settings" size={16} color={theme.accent} />
+              <Text style={[styles.manageTagsText, { color: theme.accent }]}>Gerenciar Tags</Text>
             </Pressable>
 
             <View style={styles.actionButtons}>
               {isEditing ? (
                 <>
-                  <Pressable style={styles.deleteButton} onPress={handleDelete}>
-                    <Icon name="delete" size={20} color="#ef4444" />
+                  <Pressable style={[styles.deleteButton, { backgroundColor: theme.errorBg }]} onPress={handleDelete}>
+                    <Icon name="delete" size={20} color={theme.error} />
                   </Pressable>
                   <Pressable 
-                    style={[styles.confirmButton, selectedTags.length === 0 && styles.confirmButtonDisabled]} 
+                    style={[styles.confirmButton, { backgroundColor: theme.accent }, selectedTags.length === 0 && [styles.confirmButtonDisabled, { backgroundColor: theme.border }]]} 
                     onPress={handleConfirmTags}
                     disabled={selectedTags.length === 0}
                   >
@@ -708,11 +753,11 @@ export function AnnotationPopover({
                 </>
               ) : (
                 <>
-                  <Pressable style={styles.backButton} onPress={() => setMode('options')}>
-                    <Icon name="arrow_back" size={20} color="#6b7280" />
+                  <Pressable style={[styles.backButton, { backgroundColor: theme.secondaryBg }]} onPress={() => setMode('options')}>
+                    <Icon name="arrow_back" size={20} color={theme.textSecondary} />
                   </Pressable>
                   <Pressable 
-                    style={[styles.confirmButton, selectedTags.length === 0 && styles.confirmButtonDisabled]} 
+                    style={[styles.confirmButton, { backgroundColor: theme.accent }, selectedTags.length === 0 && [styles.confirmButtonDisabled, { backgroundColor: theme.border }]]} 
                     onPress={handleConfirmTags}
                     disabled={selectedTags.length === 0}
                   >
@@ -737,7 +782,6 @@ const styles = StyleSheet.create({
   popover: {
     position: 'absolute',
     width: POPOVER_WIDTH,
-    backgroundColor: '#ffffff',
     borderRadius: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
@@ -756,7 +800,6 @@ const styles = StyleSheet.create({
     width: 32,
     height: 4,
     borderRadius: 2,
-    backgroundColor: '#d1d5db',
   },
   arrow: {
     position: 'absolute',
@@ -770,12 +813,10 @@ const styles = StyleSheet.create({
   arrowTop: {
     top: -ARROW_SIZE,
     borderBottomWidth: ARROW_SIZE,
-    borderBottomColor: '#ffffff',
   },
   arrowBottom: {
     bottom: -ARROW_SIZE,
     borderTopWidth: ARROW_SIZE,
-    borderTopColor: '#ffffff',
   },
   options: {
     flexDirection: 'row',
@@ -794,15 +835,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  textIcon: {
-    backgroundColor: '#FFE6E1',
-  },
-  audioIcon: {
-    backgroundColor: '#EDE9FE',
-  },
-  tagsIcon: {
-    backgroundColor: '#FEF3C7',
-  },
   optionLabel: {
     fontSize: 11,
     fontWeight: '500',
@@ -814,14 +846,12 @@ const styles = StyleSheet.create({
   },
   textInput: {
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     borderRadius: 8,
     padding: 12,
     fontSize: 14,
     minHeight: 80,
     maxHeight: 120,
     textAlignVertical: 'top',
-    color: '#1f2937',
   },
   actionButtons: {
     flexDirection: 'row',
@@ -831,7 +861,6 @@ const styles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#f3f4f6',
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -843,11 +872,9 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 12,
     borderRadius: 8,
-    backgroundColor: '#f3f4f6',
   },
   backButtonText: {
     fontSize: 13,
-    color: '#6b7280',
     fontWeight: '500',
   },
   confirmButton: {
@@ -858,10 +885,9 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 12,
     borderRadius: 8,
-    backgroundColor: '#8b5cf6',
   },
   confirmButtonDisabled: {
-    backgroundColor: '#d1d5db',
+    // Dynamic color applied inline
   },
   confirmButtonText: {
     color: '#ffffff',
@@ -878,21 +904,17 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 16,
-    backgroundColor: '#f3f4f6',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
   },
   tagChipSelected: {
-    backgroundColor: '#ede9fe',
-    borderColor: '#8b5cf6',
+    // Dynamic colors applied inline
   },
   tagChipText: {
     fontSize: 13,
-    color: '#6b7280',
     fontWeight: '500',
   },
   tagChipTextSelected: {
-    color: '#8b5cf6',
+    // Dynamic colors applied inline
   },
   manageTagsButton: {
     flexDirection: 'row',
@@ -901,21 +923,17 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingVertical: 8,
     borderRadius: 6,
-    backgroundColor: '#f9fafb',
     borderWidth: 1,
-    borderColor: '#e5e7eb',
     borderStyle: 'dashed',
   },
   manageTagsText: {
     fontSize: 12,
-    color: '#8b5cf6',
     fontWeight: '500',
   },
   typeTabs: {
     flexDirection: 'row',
     gap: 4,
     marginBottom: 8,
-    backgroundColor: '#f9fafb',
     borderRadius: 8,
     padding: 4,
   },
@@ -930,7 +948,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   typeTabActive: {
-    backgroundColor: '#ffffff',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
@@ -939,18 +956,15 @@ const styles = StyleSheet.create({
   },
   typeTabText: {
     fontSize: 12,
-    color: '#9ca3af',
     fontWeight: '500',
   },
   typeTabTextActive: {
-    color: '#8b5cf6',
     fontWeight: '600',
   },
   deleteButton: {
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: '#fee2e2',
     alignItems: 'center',
     justifyContent: 'center',
   },

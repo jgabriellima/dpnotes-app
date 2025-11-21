@@ -42,7 +42,7 @@ export default function RootLayout() {
         <StatusBar 
           barStyle="dark-content" 
           backgroundColor="transparent" 
-          translucent={false} 
+          translucent={true} 
         />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="index" options={{ headerShown: false }} />

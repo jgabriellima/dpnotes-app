@@ -7,7 +7,7 @@
  */
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { View, Text, Pressable, StatusBar, Alert, ActivityIndicator, BackHandler } from 'react-native';
+import { View, Text, Pressable, StatusBar, Alert, ActivityIndicator, BackHandler, useColorScheme } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Clipboard from 'expo-clipboard';
 import { useLocalSearchParams, router } from 'expo-router';
@@ -35,11 +35,26 @@ function EditorScreenContent() {
   // Initialize stores
   const { loadDocuments, getDocument, updateDocumentContent, clearAllAnnotations, createDocument } = useDocumentsStore();
   const { loadTags } = useTagsStore();
+  const { settings } = useSettingsStore();
+  const systemColorScheme = useColorScheme();
   const [isImporting, setIsImporting] = useState(false);
   const [editingAnnotation, setEditingAnnotation] = useState<Annotation | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const [showNotesMenu, setShowNotesMenu] = useState(false);
   const [popoverResetKey, setPopoverResetKey] = useState(0);
+  
+  // Determine effective theme
+  const isDark = settings.theme === 'dark' || (settings.theme === 'light' ? false : systemColorScheme === 'dark');
+  
+  const theme = {
+    background: isDark ? '#1a1a1a' : '#ffffff',
+    secondaryBg: isDark ? '#2a2a2a' : '#f5f5f5',
+    text: isDark ? '#ffffff' : '#1a1a1a',
+    textSecondary: isDark ? '#a0a0a0' : '#6b7280',
+    border: isDark ? '#3a3a3a' : '#e5e7eb',
+    accent: '#FF7B61',
+    accentLight: isDark ? '#FF7B6120' : '#FF7B6110',
+  };
   const {
     content,
     popoverPosition,
@@ -355,98 +370,109 @@ function EditorScreenContent() {
   console.log('🎯 [EditorScreen] Content:', content?.substring(0, 100));
 
   return (
-    <SafeAreaView className="flex-1 bg-white" edges={['top', 'bottom']}>
-      <StatusBar barStyle="dark-content" />
+    <NotesMenu
+      visible={showNotesMenu}
+      currentDocumentId={documentId}
+      onClose={() => setShowNotesMenu(false)}
+      onCreateNew={handleCreateNewNote}
+    >
+      <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top', 'bottom']}>
+        <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 
-      {/* Header */}
-      <View 
-        className="bg-white px-4 py-2 border-b border-gray-200"
-        style={{
-          shadowColor: '#000',
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.05,
-          shadowRadius: 3,
-          elevation: 2,
-        }}
-      >
-        {/* Top Row: Menu and Title */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
-          <Pressable onPress={() => setShowNotesMenu(true)} style={{ padding: 8 }}>
-            <Icon name="menu" size={24} color="#2D313E" />
-          </Pressable>
-          
-          <Text className="text-lg font-bold flex-1" style={{ color: '#18181b' }} numberOfLines={1}>
-            {displayTitle}
-          </Text>
-        </View>
+        {/* Header */}
+        <View 
+          style={{
+            backgroundColor: theme.background,
+            paddingHorizontal: 16,
+            paddingVertical: 8,
+            borderBottomWidth: 1,
+            borderBottomColor: theme.border,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.05,
+            shadowRadius: 3,
+            elevation: 2,
+          }}
+        >
+          {/* Top Row: Menu and Title */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 8 }}>
+            <Pressable onPress={() => setShowNotesMenu(true)} style={{ padding: 8 }}>
+              <Icon name="menu" size={24} color={theme.text} />
+            </Pressable>
+            
+            <Text 
+              style={{ 
+                fontSize: 18, 
+                fontWeight: 'bold', 
+                flex: 1, 
+                color: theme.text 
+              }} 
+              numberOfLines={1}
+            >
+              {displayTitle}
+            </Text>
+          </View>
 
-        {/* Action Row: Tools */}
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
-          {/* Quick Actions */}
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Pressable 
-              onPress={handleImportFromClipboard} 
-              style={{ padding: 6 }}
-              disabled={isImporting}
-            >
-              {isImporting ? (
-                <ActivityIndicator size="small" color="#6b7280" />
-              ) : (
-                <Icon name="download" size={20} color="#6b7280" />
-              )}
-            </Pressable>
-            <Pressable onPress={handleCopyToClipboard} style={{ padding: 6 }}>
-              <Icon name="ios_share" size={20} color="#6b7280" />
-            </Pressable>
-            <Pressable 
-              onPress={() => setShowSettings(true)} 
-              style={{ padding: 6, marginLeft: 4 }}
-            >
-              <Icon name="settings" size={20} color="#6b7280" />
-            </Pressable>
+          {/* Action Row: Tools */}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'flex-end' }}>
+            {/* Quick Actions */}
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              <Pressable 
+                onPress={handleImportFromClipboard} 
+                style={{ padding: 6 }}
+                disabled={isImporting}
+              >
+                {isImporting ? (
+                  <ActivityIndicator size="small" color={theme.textSecondary} />
+                ) : (
+                  <Icon name="download" size={20} color={theme.textSecondary} />
+                )}
+              </Pressable>
+              <Pressable onPress={handleCopyToClipboard} style={{ padding: 6 }}>
+                <Icon name="ios_share" size={20} color={theme.textSecondary} />
+              </Pressable>
+              <Pressable 
+                onPress={() => setShowSettings(true)} 
+                style={{ padding: 6, marginLeft: 4 }}
+              >
+                <Icon name="settings" size={20} color={theme.textSecondary} />
+              </Pressable>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Selectable Text Editor - Production component with annotations */}
-      <SelectableTextEditor 
-        content={content}
-        annotations={document?.annotations || []}
-        onSelectionChange={handleSelectionChangeWrapper}
-        onAnnotationPress={handleAnnotationPress}
-        onImportPress={handleImportFromClipboard}
-        isImporting={isImporting}
-      />
+        {/* Selectable Text Editor - Production component with annotations */}
+        <SelectableTextEditor 
+          content={content}
+          annotations={document?.annotations || []}
+          onSelectionChange={handleSelectionChangeWrapper}
+          onAnnotationPress={handleAnnotationPress}
+          onImportPress={handleImportFromClipboard}
+          isImporting={isImporting}
+        />
 
-      {/* Annotation Popover - Inline annotations, no modals, supports editing */}
-      <AnnotationPopover
-        visible={showAnnotationPopover}
-        position={popoverPosition}
-        selectedText={getSelectedText()}
-        editingAnnotation={editingAnnotation}
-        onTextNote={handleCreateTextAnnotation}
-        onAudioNote={handleCreateAudioAnnotation}
-        onTagsNote={handleCreateTagsAnnotation}
-        onUpdateAnnotation={handleUpdateAnnotation}
-        onDeleteAnnotation={handleDeleteAnnotation}
-        onClose={handlePopoverClose}
-        resetKey={popoverResetKey}
-      />
+        {/* Annotation Popover - Inline annotations, no modals, supports editing */}
+        <AnnotationPopover
+          visible={showAnnotationPopover}
+          position={popoverPosition}
+          selectedText={getSelectedText()}
+          editingAnnotation={editingAnnotation}
+          onTextNote={handleCreateTextAnnotation}
+          onAudioNote={handleCreateAudioAnnotation}
+          onTagsNote={handleCreateTagsAnnotation}
+          onUpdateAnnotation={handleUpdateAnnotation}
+          onDeleteAnnotation={handleDeleteAnnotation}
+          onClose={handlePopoverClose}
+          resetKey={popoverResetKey}
+        />
 
-      {/* Settings Modal */}
-      <SettingsModal
-        visible={showSettings}
-        onClose={() => setShowSettings(false)}
-      />
-
-      {/* Notes Menu */}
-      <NotesMenu
-        visible={showNotesMenu}
-        currentDocumentId={documentId}
-        onClose={() => setShowNotesMenu(false)}
-        onCreateNew={handleCreateNewNote}
-      />
-    </SafeAreaView>
+        {/* Settings Modal */}
+        <SettingsModal
+          visible={showSettings}
+          onClose={() => setShowSettings(false)}
+        />
+      </SafeAreaView>
+    </NotesMenu>
   );
 }
 

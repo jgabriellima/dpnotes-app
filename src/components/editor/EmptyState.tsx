@@ -5,8 +5,9 @@
  */
 
 import React from 'react';
-import { View, Text, Pressable, StyleSheet, Animated } from 'react-native';
+import { View, Text, Pressable, StyleSheet, Animated, useColorScheme } from 'react-native';
 import Svg, { Path, Circle, Rect } from 'react-native-svg';
+import { useSettingsStore } from '../../stores/settingsStore';
 
 interface EmptyStateProps {
   onImportPress: () => void;
@@ -15,6 +16,19 @@ interface EmptyStateProps {
 
 export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps) {
   const pulseAnim = React.useRef(new Animated.Value(1)).current;
+  const { settings } = useSettingsStore();
+  const systemColorScheme = useColorScheme();
+  
+  // Determine effective theme
+  const isDark = settings.theme === 'dark' || (settings.theme === 'light' ? false : systemColorScheme === 'dark');
+  
+  const theme = {
+    background: isDark ? '#1a1a1a' : '#ffffff',
+    text: isDark ? '#ffffff' : '#1f2937',
+    textSecondary: isDark ? '#a0a0a0' : '#6b7280',
+    accent: '#FF7B61',
+    clipboardBg: isDark ? '#2a2a2a' : '#ffffff',
+  };
 
   React.useEffect(() => {
     // Subtle pulse animation for the button
@@ -35,7 +49,7 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
   }, [pulseAnim]);
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor: theme.background }]}>
       <View style={styles.content}>
         {/* SVG Icon - Clipboard/Document */}
         <View style={styles.iconContainer}>
@@ -58,8 +72,8 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
               width="60"
               height="80"
               rx="6"
-              fill="#ffffff"
-              stroke="#ff6b52"
+              fill={theme.clipboardBg}
+              stroke={theme.accent}
               strokeWidth="2"
             />
             
@@ -70,7 +84,7 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
               width="30"
               height="10"
               rx="3"
-              fill="#ff6b52"
+              fill={theme.accent}
             />
             
             {/* Document lines */}
@@ -80,7 +94,7 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
             <Rect x="40" y="65" width="30" height="3" rx="1.5" fill="#ffccc3" />
             
             {/* Plus icon */}
-            <Circle cx="75" cy="85" r="15" fill="#ff6b52" />
+            <Circle cx="75" cy="85" r="15" fill={theme.accent} />
             <Path
               d="M75 78 L75 92 M68 85 L82 85"
               stroke="#ffffff"
@@ -91,10 +105,10 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
         </View>
 
         {/* Title */}
-        <Text style={styles.title}>Comece uma Nova Nota</Text>
+        <Text style={[styles.title, { color: theme.text }]}>Comece uma Nova Nota</Text>
         
         {/* Subtitle */}
-        <Text style={styles.subtitle}>
+        <Text style={[styles.subtitle, { color: theme.textSecondary }]}>
           Cole seu conteúdo do clipboard e{'\n'}comece a anotar imediatamente
         </Text>
 
@@ -120,7 +134,7 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
               />
               <Path
                 d="M12 4v4h4"
-                stroke="#ff6b52"
+                stroke={theme.accent}
                 strokeWidth="1.5"
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -139,7 +153,6 @@ export function EmptyState({ onImportPress, isLoading = false }: EmptyStateProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -154,13 +167,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: '700',
-    color: '#1f2937',
     marginBottom: 12,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#6b7280',
     textAlign: 'center',
     lineHeight: 24,
     marginBottom: 32,

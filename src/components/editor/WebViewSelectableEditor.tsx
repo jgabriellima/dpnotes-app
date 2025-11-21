@@ -6,7 +6,7 @@
  */
 
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, useColorScheme } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import { buildHtmlFromMarkdown } from '../../utils/htmlTemplate';
 import { injectAnnotationsIntoHtml } from '../../utils/annotationInjector';
@@ -145,6 +145,11 @@ export function WebViewSelectableEditor({
   
   const [selection, setSelection] = React.useState<SelectionInfo | null>(null);
   const { settings } = useSettingsStore();
+  const systemColorScheme = useColorScheme();
+  
+  // Determine effective theme
+  const isDark = settings.theme === 'dark' || (settings.theme === 'light' ? false : systemColorScheme === 'dark');
+  const backgroundColor = isDark ? '#1a1a1a' : '#ffffff';
   
   // Font size mapping
   const fontSizeMap = {
@@ -158,22 +163,31 @@ export function WebViewSelectableEditor({
     if (!content || content.trim().length === 0) return '';
     
     try {
+      // Determine effective theme for annotations
+      // Use settings.theme directly (it's already 'light' or 'dark')
+      const effectiveTheme = settings.theme;
+      
       console.log('🔄 [WebViewEditor] Regenerating HTML with annotations and settings:', {
         contentLength: content.length,
         annotationsCount: annotations?.length || 0,
         fontSize: settings.fontSize,
-        theme: settings.theme,
+        theme: effectiveTheme,
         scrollPosition: settings.scrollPosition,
       });
       
-      // Inject annotations into HTML
-      const htmlWithAnnotations = injectAnnotationsIntoHtml(content, annotations || []);
+      // Inject annotations into HTML with theme support
+      const htmlWithAnnotations = injectAnnotationsIntoHtml(
+        content, 
+        annotations || [], 
+        effectiveTheme
+      );
       return buildHtmlFromMarkdown(
         htmlWithAnnotations,
         fontSizeMap[settings.fontSize],
         settings.scrollPosition,
-        settings.theme,
-        settings.highContrast
+        effectiveTheme,
+        settings.highContrast,
+        settings.scrollAreaWidth
       );
     } catch (error) {
       console.error('❌ Error converting text:', error);
@@ -184,10 +198,11 @@ export function WebViewSelectableEditor({
         fontSizeMap[settings.fontSize],
         settings.scrollPosition,
         settings.theme,
-        settings.highContrast
+        settings.highContrast,
+        settings.scrollAreaWidth
       );
     }
-  }, [content, annotations, settings]);
+  }, [content, annotations, settings, systemColorScheme]);
   
   // Handle messages from WebView
   const handleMessage = (event: WebViewMessageEvent) => {
@@ -279,25 +294,26 @@ export function WebViewSelectableEditor({
   }
   
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { backgroundColor }]}>
       {/* Safe Scroll Area Indicator - Position based on settings */}
       <View style={[
         styles.safeScrollIndicator,
+        { width: settings.scrollAreaWidth },
         settings.scrollPosition === 'right' ? styles.safeScrollRight : styles.safeScrollLeft
       ]}>
         <View style={styles.scrollArrow}>
-          <Text style={styles.arrowText}>▲</Text>
+          <Text style={[styles.arrowText, { color: isDark ? '#a0a0a0' : '#6b7280' }]}>▲</Text>
         </View>
-        <View style={styles.scrollLine} />
+        <View style={[styles.scrollLine, { backgroundColor: isDark ? '#3a3a3a' : '#e5e7eb' }]} />
         <View style={styles.scrollArrow}>
-          <Text style={styles.arrowText}>▼</Text>
+          <Text style={[styles.arrowText, { color: isDark ? '#a0a0a0' : '#6b7280' }]}>▼</Text>
         </View>
       </View>
       
       <WebView
         originWhitelist={['*']}
         source={{ html }}
-        style={styles.webView}
+        style={[styles.webView, { backgroundColor }]}
         onMessage={handleMessage}
         javaScriptEnabled
         textZoom={100}
@@ -312,17 +328,14 @@ export function WebViewSelectableEditor({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   webView: {
     flex: 1,
-    backgroundColor: '#ffffff',
   },
   safeScrollIndicator: {
     position: 'absolute',
     top: 0,
     bottom: 0,
-    width: 32,
     justifyContent: 'center',
     alignItems: 'center',
     zIndex: 10,
@@ -343,12 +356,10 @@ const styles = StyleSheet.create({
   },
   arrowText: {
     fontSize: 14,
-    color: '#6b7280',
   },
   scrollLine: {
     width: 1,
     flex: 1,
-    backgroundColor: '#e5e7eb',
     marginVertical: 8,
     opacity: 0.3,
   },

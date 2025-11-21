@@ -264,3 +264,4 @@ pngquant --quality=50-75 --ext .png --force image.png
 **Status**: Assets otimizados, produção configurada
 
 
+
